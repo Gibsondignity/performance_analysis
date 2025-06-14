@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | AI-Driven Employee System</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="min-h-screen flex">
+    <!-- Left Image Section -->
+    <div class="hidden md:flex w-1/2 bg-blue-800 justify-center items-center p-10 animate-fade-in-left">
+        <div class="text-white text-center">
+            <h2 class="text-4xl font-bold mb-4">Welcome Back!</h2>
+            <p class="text-lg">AI-Driven Performance & HR Management Platform</p>
+            <img src="{% static 'images/power_ai1.jpg' %}" alt="Login Art" class="mt-8 rounded-xl shadow-lg animate-pulse-slow">
+        </div>
+    </div>
+
+    <!-- Right Login Form -->
+    <div class="w-full md:w-1/2 flex items-center justify-center bg-white p-10 animate-fade-in-right">
+        <form method="POST" class="w-full max-w-md bg-white shadow-lg rounded-xl p-8 space-y-6">
+            
+            {% if messages %}
+            <div class="my-4">
+                {% for message in messages %}
+                <div class="p-4 rounded-lg 
+                    {% if message.tags == 'success' %}bg-green-100 text-green-800
+                    {% elif message.tags == 'error' %}bg-red-100 text-red-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% csrf_token %}
+            <h2 class="text-3xl font-bold text-center text-blue-800">Sign in</h2>
+
+            {% if error %}
+                <p class="text-red-600 text-sm text-center">{{ error }}</p>
+            {% endif %}
+
+            <div>
+                <label for="employee_id" class="block text-sm font-medium text-gray-700">Employee ID</label>
+                <input type="text" name="employee_id" id="employee_id"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-600 focus:border-blue-600"
+                       required>
+            </div>
+
+            <div class="relative">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password" id="password"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-600 focus:border-blue-600"
+                       required>
+                <button type="button" id="togglePassword"
+                        class="absolute inset-y-0 right-3 top-9 text-sm text-gray-500 hover:text-blue-600">
+                    Show
+                </button>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                Login
+            </button>
+
+            <p class="text-sm text-center text-gray-500">© {{ year }} Company HR System</p>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInLeft {
+        0% { opacity: 0; transform: translateX(-30px); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes fadeInRight {
+        0% { opacity: 0; transform: translateX(30px); }
+        100% { opacity: 1; transform: translateX(0); }
+    }
+
+    .animate-fade-in-left {
+        animation: fadeInLeft 1s ease-out forwards;
+    }
+
+    .animate-fade-in-right {
+        animation: fadeInRight 1s ease-out forwards;
+    }
+
+    .animate-pulse-slow {
+        animation: pulse 5s infinite;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#togglePassword').click(function () {
+            const password = $('#password');
+            const type = password.attr('type') === 'password' ? 'text' : 'password';
+            password.attr('type', type);
+            $(this).text(type === 'password' ? 'Show' : 'Hide');
+        });
+    });
+</script>
+
+</body>
+</html>

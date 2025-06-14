@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Update Employee{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6">
+    <h2 class="text-2xl font-bold mb-4">Update Employee - {{ employee.get_full_name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label>Employee ID</label>
+                {{ user_form.employee_id }}
+            </div>
+            <div>
+                <label>Password</label>
+                {{ user_form.password }}
+            </div>
+            <div>
+                <label>Role</label>
+                {{ user_form.role }}
+            </div>
+            <div>
+                <label>Branch</label>
+                {{ user_form.branch }}
+            </div>
+            <div>
+                <label>Is Active</label>
+                {{ user_form.is_active }}
+            </div>
+            <div>
+                <label>Department</label>
+                {{ profile_form.department }}
+            </div>
+            <div>
+                <label>Job Title</label>
+                {{ profile_form.job_title }}
+            </div>
+            <div>
+                <label>Date Hired</label>
+                {{ profile_form.date_hired }}
+            </div>
+            <div>
+                <label>Manager</label>
+                {{ profile_form.manager }}
+            </div>
+            <div>
+                <label>Phone</label>
+                {{ contact_form.phone }}
+            </div>
+            <div>
+                <label>Address</label>
+                {{ contact_form.address }}
+            </div>
+            <div>
+                <label>Emergency Contact Name</label>
+                {{ contact_form.emergency_contact_name }}
+            </div>
+            <div>
+                <label>Emergency Contact Phone</label>
+                {{ contact_form.emergency_contact_phone }}
+            </div>
+            <div>
+                <label>Relationship</label>
+                {{ contact_form.emergency_relationship }}
+            </div>
+        </div>
+        
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+    </form>
+</div>
+{% endblock %}

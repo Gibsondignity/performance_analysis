@@ -1,0 +1,125 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}AI-Driven Employee System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% tailwind_css %}
+    <script src="https://unpkg.com/alpinejs@3.13.2" defer></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(to right, #1D2671, #C33764);
+        }
+
+        .sidebar-gradient {
+            background: linear-gradient(to bottom, #C33764, #1D2671);
+        }
+
+        .btn-hover:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-[#F0F4FA] font-sans text-[#2F2F2F] min-h-screen">
+
+<div class="flex h-screen" x-data="{ sidebarOpen: false }">
+
+    <!-- Sidebar -->
+    <aside :class="sidebarOpen ? 'block' : 'hidden md:block'" class="sidebar-gradient w-64 text-white shadow-2xl z-40">
+        <div class="p-6 flex flex-col justify-between h-full">
+            <div>
+                <h2 class="text-3xl font-extrabold text-center mb-6">🌟 EMP SYS</h2>
+                <nav class="space-y-3 text-sm">
+                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
+
+                    {% if user.role == "HR" %}
+                        <a href="{% url 'employee_management' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">👥 Employee Mgmt</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 Performance</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Analytics</a>
+
+                    {% elif user.role == "MANAGER" %}
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">👤 Team</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📝 Evaluate</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Reports</a>
+
+                    {% elif user.role == "HIGH_MANAGER" %}
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📂 Manager View</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📍 Branch Data</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Deep Analytics</a>
+
+                    {% elif user.role == "EMPLOYEE" %}
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">🧑 Personal Info</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📞 Emergency</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">💼 Job Info</a>
+                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Performance</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Area -->
+    <div class="flex-1 flex flex-col bg-white shadow-inner overflow-hidden rounded-tl-3xl">
+
+        <!-- Top Bar -->
+        <header class="flex items-center justify-between px-6 py-4 gradient-bg text-white shadow-lg">
+            <div class="flex items-center space-x-4">
+                <button @click="sidebarOpen = !sidebarOpen" class="md:hidden focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold tracking-wide">Welcome, {{ request.session.first_name }} </h1>
+            </div>
+
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="flex items-center space-x-2 hover:scale-105 transition focus:outline-none">
+                    <img class="h-10 w-10 rounded-full border-2 border-white"
+                         src="https://ui-avatars.com/api/?name={{ user }}"
+                         alt="Avatar">
+                </button>
+
+                <div x-show="open" @click.away="open = false"
+                     class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl z-50">
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">⚙️ Settings</a>
+                    <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-gray-100">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-8 bg-gradient-to-br from-[#f5f7fa] via-[#f0f4fa] to-[#e8eff9] fade-in">
+            {% if messages %}
+            <div class="my-4">
+                {% for message in messages %}
+                <div class="p-4 rounded-lg 
+                    {% if message.tags == 'success' %}bg-green-100 text-green-800
+                    {% elif message.tags == 'error' %}bg-red-100 text-red-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block content %}
+            <!-- Dynamic Content Injected Here -->
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytical Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Sales Performance Bar Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-md">
+        <h2 class="text-lg font-semibold mb-4">Sales Performance</h2>
+        <canvas id="salesChart"></canvas>
+    </div>
+
+    <!-- Revenue Performance Pie Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-md">
+        <h2 class="text-lg font-semibold mb-4">Revenue Achievement</h2>
+        <canvas id="revenuePieChart"></canvas>
+    </div>
+
+    <!-- Team Engagement Line Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-md col-span-1 md:col-span-2">
+        <h2 class="text-lg font-semibold mb-4">Team Engagement Over Time</h2>
+        <canvas id="engagementLineChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const salesData = {{ sales_data|safe }};
+    const revenueData = {{ revenue_data|safe }};
+    const engagementData = {{ engagement_data|safe }};
+
+    const salesChart = new Chart(document.getElementById('salesChart'), {
+        type: 'bar',
+        data: {
+            labels: salesData.labels,
+            datasets: [
+                {
+                    label: 'Sales Target Achieved (%)',
+                    data: salesData.percentages,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 150,
+                    ticks: { stepSize: 25 }
+                }
+            }
+        }
+    });
+
+    const revenueChart = new Chart(document.getElementById('revenuePieChart'), {
+        type: 'pie',
+        data: {
+            labels: revenueData.labels,
+            datasets: [{
+                label: 'Revenue Achievement',
+                data: revenueData.percentages,
+                backgroundColor: [
+                    '#4ade80', '#facc15', '#60a5fa', '#f87171', '#a78bfa'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+        }
+    });
+
+    const engagementChart = new Chart(document.getElementById('engagementLineChart'), {
+        type: 'line',
+        data: {
+            labels: engagementData.labels,
+            datasets: [{
+                label: 'Team Engagement Score',
+                data: engagementData.scores,
+                fill: false,
+                borderColor: '#9333ea',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Employee{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6 max-w-4xl p-8 bg-white rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-4">✏️ Edit Employee - {{ employee.first_name }} {{ employee.last_name }}</h2>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-4 rounded 
+            {% if message.tags == 'success' %}bg-green-100 text-green-800
+            {% elif message.tags == 'error' %}bg-red-100 text-red-800
+            {% else %}bg-gray-100 text-gray-800{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-8">
+            {{ user_form.as_p }}
+            {{ profile_form.as_p }}
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+            <a href="{% url 'employee_management' %}" class="text-gray-600 hover:underline">← Cancel</a>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">💾 Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

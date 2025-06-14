@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Sales Target Achievement -->
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-blue-700">Sales Target Achievement (%)</h3>
+        <canvas id="salesChart" height="200"></canvas>
+    </div>
+
+    <!-- Revenue Performance -->
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-green-700">Revenue Target vs Volume</h3>
+        <canvas id="revenueChart" height="200"></canvas>
+    </div>
+
+    <!-- Distribution Coverage -->
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-yellow-600">Distribution Coverage (%)</h3>
+        <canvas id="distributionChart" height="200"></canvas>
+    </div>
+
+    <!-- Customer Base Target -->
+    <div class="bg-white p-6 rounded-2xl shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-purple-700">Customer Base Target Achievement (%)</h3>
+        <canvas id="customerChart" height="200"></canvas>
+    </div>
+
+    <!-- Team Engagement -->
+    <div class="col-span-1 md:col-span-2 bg-white p-6 rounded-2xl shadow-md">
+        <h3 class="text-lg font-semibold mb-4 text-red-600">Team Engagement (Teamwork)</h3>
+        <canvas id="engagementChart" height="100"></canvas>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const salesChart = new Chart(document.getElementById('salesChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Michael Asante', 'Josephine Mensah'],
+            datasets: [{
+                label: 'Sales Achieved %',
+                data: [108.772, 103.923],
+                backgroundColor: ['#3B82F6', '#2563EB']
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 150 }
+            }
+        }
+    });
+
+    const revenueChart = new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: ['Michael Asante', 'Josephine Mensah'],
+            datasets: [{
+                label: 'Target',
+                data: [10348, 26911],
+                borderColor: '#10B981',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                fill: true
+            },
+            {
+                label: 'Achieved',
+                data: [9265, 24475],
+                borderColor: '#065F46',
+                backgroundColor: 'rgba(6, 95, 70, 0.2)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    const distributionChart = new Chart(document.getElementById('distributionChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Michael Asante', 'Josephine Mensah'],
+            datasets: [{
+                label: 'Distribution %',
+                data: [123.243, 89.0547],
+                backgroundColor: ['#F59E0B', '#D97706']
+            }]
+        }
+    });
+
+    const customerChart = new Chart(document.getElementById('customerChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Michael Asante', 'Josephine Mensah'],
+            datasets: [{
+                label: 'Customer Target Achieved (%)',
+                data: [92.9397, 103.848],
+                backgroundColor: ['#8B5CF6', '#7C3AED']
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 120 }
+            }
+        }
+    });
+
+    const engagementChart = new Chart(document.getElementById('engagementChart'), {
+        type: 'radar',
+        data: {
+            labels: ['Teamwork', 'Communication', 'Dependability'],
+            datasets: [{
+                label: 'Michael Asante',
+                data: [7, 8, 7],
+                fill: true,
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                pointBackgroundColor: 'rgba(239, 68, 68, 1)'
+            },
+            {
+                label: 'Josephine Mensah',
+                data: [1, 4, 5],
+                fill: true,
+                backgroundColor: 'rgba(252, 165, 165, 0.2)',
+                borderColor: 'rgba(252, 165, 165, 1)',
+                pointBackgroundColor: 'rgba(252, 165, 165, 1)'
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}
