@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Performance Records{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in">
+
+    {% if user.role == 'MANAGER' %}
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Performance Records</h2>
+            <a href="{% url 'add_performance_record' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">➕ Add Record</a>
+
+        </div>
+    {% endif %}
+
+    <!-- Filter Form -->
+    <form method="get" class="mb-12 w-full">
+        <div class="flex flex-wrap md:flex-nowrap items-end gap-6 bg-gray-50 p-4 rounded-xl shadow-sm">
+            <!-- Employee Filter -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="employee" class="text-sm font-medium text-gray-700">Employee</label>
+                <select name="employee" id="employee"
+                        class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+                    <option value="">All Employees</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.id }}" {% if employee.id == selected_employee %}selected{% endif %}>
+                            {{ employee }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Start Date -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="start_date" class="text-sm font-medium text-gray-700">From Date</label>
+                <input type="date" name="start_date" id="start_date" value="{{ start_date }}"
+                       class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+            </div>
+
+            <!-- End Date -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="end_date" class="text-sm font-medium text-gray-700">To Date</label>
+                <input type="date" name="end_date" id="end_date" value="{{ end_date }}"
+                       class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+            </div>
+
+            <!-- Filter Button -->
+            <div class="flex flex-col w-full md:w-auto">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 mt-[28px] rounded-lg shadow transition whitespace-nowrap">
+                    Filter
+                </button>
+            </div>
+        </div>
+    </form>
+    <br>
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white rounded-2xl shadow-md animate-fade-in-up">
+        <table id="performanceTable" class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Employee</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">% Sales</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">% Distribution</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">% Revenue</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">% Customers</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Engagement</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Date</th>
+                    {% if user.role == 'MANAGER' %}
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase">Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                {% for record in records %}
+                <tr class="hover:bg-gray-50 transition duration-300">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ record.employee }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ record.sales_achieved_percent|floatformat:2 }}%</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ record.distribution_achieved_percent|floatformat:2 }}%</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ record.revenue_achieved_percent|floatformat:2 }}%</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ record.customer_base_achieved_percent|floatformat:2 }}%</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ record.team_engagement_score }}/10</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">
+                        {{ record.performance_start_date|date:"M d, Y" }} → {{ record.performance_end_date|date:"M d, Y" }}
+                    </td>
+                    {% if user.role == 'MANAGER' %}
+                    <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
+                        <a href="{% url 'edit_performance_record' record.pk %}" class="bg-yellow-500 px-2 py-1 rounded text-yellow-300 hover:bg-yellow-600 transition">
+                            ✏️ Edit
+                        </a>
+                        <form method="POST" action="{% url 'delete_performance_record' record.pk %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this performance record?')" class="deleteBtn bg-red-600 px-2 py-1 rounded text-red-600 hover:bg-red-700 transition">
+                                🗑️ Delete
+                            </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">No performance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<style>
+    @keyframes fade-in {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+    animation: fade-in 0.4s ease-out both;
+    }
+    .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out both;
+    }
+</style>
+{% endblock %}
