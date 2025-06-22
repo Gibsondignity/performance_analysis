@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 fade-in">
+    <h2 class="text-3xl font-extrabold text-gray-800 mb-6">📊 Performance Analytics</h2>
+
+    <!-- Filter Form -->
+    <form method="get" class="mb-8">
+        <div class="flex flex-wrap md:flex-nowrap items-end gap-4">
+            <!-- Employee Filter -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="employee" class="text-sm font-medium text-gray-700">Employee</label>
+                <select name="employee" id="employee"
+                        class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+                    <option value="">All Employees</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.id }}" {% if employee.id == selected_employee %}selected{% endif %}>
+                            {{ employee }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Start Date -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="start_date" class="text-sm font-medium text-gray-700">From Date</label>
+                <input type="date" name="start_date" id="start_date" value="{{ start_date }}"
+                       class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+            </div>
+            <!-- End Date -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <label for="end_date" class="text-sm font-medium text-gray-700">To Date</label>
+                <input type="date" name="end_date" id="end_date" value="{{ end_date }}"
+                       class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+            </div>
+            <!-- Filter Button -->
+            <div class="flex flex-col w-full md:w-auto">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 mt-[28px] rounded-lg shadow transition whitespace-nowrap">
+                    Filter
+                </button>
+            </div>
+        </div>
+    </form><br><br>
+
+    <!-- Analytics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+            <p class="text-gray-500">Avg. Sales Achieved</p>
+            <p class="text-2xl font-semibold text-blue-700">{{ avg_sales }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+            <p class="text-gray-500">Avg. Distribution</p>
+            <p class="text-2xl font-semibold text-purple-700">{{ avg_distribution }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+            <p class="text-gray-500">Avg. Revenue</p>
+            <p class="text-2xl font-semibold text-green-700">{{ avg_revenue }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition">
+            <p class="text-gray-500">Avg. Engagement</p>
+            <p class="text-2xl font-semibold text-red-700">{{ avg_engagement }}/10</p>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-lg">
+        <canvas id="performanceChart" height="100"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}    
+    <script>
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_labels|safe }},
+                datasets: [
+                    {
+                        label: 'Sales %',
+                        data: {{ chart_sales|safe }},
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Revenue %',
+                        data: {{ chart_revenue|safe }},
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Engagement',
+                        data: {{ chart_engagement|safe }},
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Performance Trend Over Time'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock extra_js %}
