@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.conf import settings
-from django.forms.widgets import TextInput, PasswordInput, Select, DateInput, CheckboxInput
+from django.forms.widgets import TextInput, PasswordInput, Select, DateInput, CheckboxInput, NumberInput, Textarea
 
 from .models import *
 
@@ -213,5 +213,119 @@ class EditEmployeeProfileForm(forms.ModelForm):
             'emergency_relationship': TextInput(attrs={
                 'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
                 'placeholder': 'Relationship'
+            }),
+        }
+
+
+
+
+
+class PerformanceRecordForm(forms.ModelForm):
+    class Meta:
+        model = PerformanceRecord
+        fields = ['employee', 
+                'sales_target', 
+                'sales_volume', 
+                'distribution_target', 
+                'distribution_volume', 
+                'revenue_target', 
+                'revenue_volume',
+                'customer_base_target',
+                'customer_base_volume',
+                'team_engagement_score',
+                'performance_start_date',
+                'performance_end_date'
+            ]
+        
+        widgets = {
+            'employee': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'sales_target': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Sales Target'
+            }),
+            'sales_volume': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Sales Volume'
+            }),
+            'distribution_target': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Distribution Target'
+            }),
+            'distribution_volume': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Distribution Volume'
+            }),
+            'revenue_target': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Revenue Target'
+            }),
+            'revenue_volume': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Revenue Volume'
+            }),
+            'customer_base_target': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Customer Base Target'
+            }),
+            'customer_base_volume': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'step': '0.01',
+                'placeholder': 'Customer Base Volume'
+            }),
+            'team_engagement_score': NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 0,
+                'max': 10,
+                'placeholder': 'Score (0-10)'
+            }),
+            'performance_start_date': DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'type': 'date'
+            }),
+            'performance_end_date': DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'type': 'date'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['employee'].queryset = EmployeeProfile.objects.select_related('user')
+
+
+
+class EvaluationForm(forms.ModelForm):
+    class Meta:
+        model = Evaluation
+        fields = ['employee', 'remarks', 'performance_score']
+        widgets = {
+            'employee': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'evaluator': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'date': DateInput(attrs={
+                'type': 'date',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'performance_score': forms.NumberInput(attrs={
+                'min': 1,
+                'max': 10,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'remarks': Textarea(attrs={
+                'rows': 4,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Write evaluation remarks here...'
             }),
         }
