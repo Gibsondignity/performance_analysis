@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}{{ employee.user.employee_id }} - {{ employee.first_name }} {{ employee.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-10 px-4 md:px-6 animate-fade-in">
+    <!-- Header -->
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-gray-800">{{ employee.first_name }} {{ employee.last_name }}</h1>
+        <p class="text-lg text-gray-600 mt-2">Employee ID: <span class="font-semibold">{{ employee.user.employee_id }}</span></p>
+        <p class="text-sm text-gray-500 mt-1">Role: {{ employee.user.get_role_display }} | Branch: {{ employee.user.branch|default:"N/A" }}</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white shadow-2xl rounded-2xl p-8 transition-transform transform hover:scale-[1.01] border border-gray-200">
+
+        <!-- Personal & Contact Info -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-5">
+                <h2 class="text-xl font-semibold text-blue-700">Personal Information</h2>
+                <div>
+                    <p class="text-gray-600 text-sm">Department</p>
+                    <p class="font-semibold">{{ employee.department }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Job Title</p>
+                    <p class="font-semibold">{{ employee.job_title }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Date Hired</p>
+                    <p class="font-semibold">{{ employee.date_hired|date:"F j, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <h2 class="text-xl font-semibold text-blue-700">Contact Information</h2>
+                <div>
+                    <p class="text-gray-600 text-sm">Phone</p>
+                    <p class="font-semibold">{{ employee.phone|default:"Not provided" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Address</p>
+                    <p class="font-semibold">{{ employee.address|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Emergency Contact -->
+        <section class="pt-8">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Emergency Contact</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <p class="text-gray-600 text-sm">Name</p>
+                    <p class="font-semibold">{{ employee.emergency_contact_name|default:"Not provided" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Phone</p>
+                    <p class="font-semibold">{{ employee.emergency_contact_phone|default:"Not provided" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Relationship</p>
+                    <p class="font-semibold">{{ employee.emergency_relationship|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Account Info -->
+        <section class="pt-8">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">Account & Permissions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-gray-600 text-sm">Active</p>
+                    <p class="font-semibold flex items-center">
+                        {% if employee.user.is_active %}
+                        <span class="inline-block w-3 h-3 mr-2 rounded-full bg-green-500 animate-pulse"></span> Yes
+                        {% else %}
+                        <span class="inline-block w-3 h-3 mr-2 rounded-full bg-red-500"></span> No
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Staff Member</p>
+                    <p class="font-semibold flex items-center">
+                        {% if employee.user.is_staff %}
+                        <span class="inline-block w-3 h-3 mr-2 rounded-full bg-blue-500"></span> Yes
+                        {% else %}
+                        <span class="inline-block w-3 h-3 mr-2 rounded-full bg-gray-400"></span> No
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Branch</p>
+                    <p class="font-semibold">{{ employee.user.branch|default:"Not assigned" }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timestamps -->
+        <section class="pt-8">
+            <h2 class="text-xl font-semibold text-blue-700 mb-4">System Info</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-gray-600 text-sm">Created At</p>
+                    <p class="font-semibold">{{ employee.data_created|date:"F j, Y g:i A"|default:"—" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Updated At</p>
+                    <p class="font-semibold">{{ employee.data_updated|date:"F j, Y g:i A"|default:"—" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Created By</p>
+                    <p class="font-semibold">{{ employee.created_by|default:"System" }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-600 text-sm">Updated By</p>
+                    <p class="font-semibold">{{ employee.updated_by|default:"—" }}</p>
+                </div>
+            </div>
+        </section>
+
+        
+    </div>
+</div>
+{% endblock %}

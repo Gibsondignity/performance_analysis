@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}My Performance & Evaluation{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-10 px-4 md:px-6 animate-fade-in">
+    <div class="mb-6 flex flex-wrap md:flex-nowrap items-end justify-between gap-4">
+        <h2 class="text-2xl font-bold text-gray-800">My Performance & Evaluation</h2>
+        <form method="get" class="flex flex-wrap md:flex-nowrap gap-4">
+            <div>
+                <label class="text-sm">Start Date</label>
+                <input type="date" name="start_date" value="{{ request.GET.start_date }}" class="rounded border-gray-300 mt-1">
+            </div>
+            <div>
+                <label class="text-sm">End Date</label>
+                <input type="date" name="end_date" value="{{ request.GET.end_date }}" class="rounded border-gray-300 mt-1">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-[30px]">Filter</button>
+        </form>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Sales Achieved</h3>
+            <p class="text-2xl font-bold text-blue-600">{{ avg_sales }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Revenue Achieved</h3>
+            <p class="text-2xl font-bold text-green-600">{{ avg_revenue }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Engagement</h3>
+            <p class="text-2xl font-bold text-purple-600">{{ avg_engagement }}/10</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="font-semibold mb-2">Sales & Revenue Trend</h3>
+            <canvas id="performanceLineChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="font-semibold mb-2">Evaluation Scores Over Time</h3>
+            <canvas id="evaluationLineChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const performanceData = {{ performance_chart_data|safe }};
+    const evaluationData = {{ evaluation_chart_data|safe }};
+
+    new Chart(document.getElementById('performanceLineChart'), {
+        type: 'line',
+        data: {
+            labels: performanceData.labels,
+            datasets: [
+                {
+                    label: '% Sales',
+                    data: performanceData.sales,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    tension: 0.4
+                },
+                {
+                    label: '% Revenue',
+                    data: performanceData.revenue,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            animation: { duration: 800 }
+        }
+    });
+
+    new Chart(document.getElementById('evaluationLineChart'), {
+        type: 'line',
+        data: {
+            labels: evaluationData.labels,
+            datasets: [{
+                label: 'Score',
+                data: evaluationData.scores,
+                borderColor: '#8b5cf6',
+                fill: false,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: { duration: 800 },
+            scales: { y: { beginAtZero: true, max: 10 } }
+        }
+    });
+</script>
+{% endblock %}

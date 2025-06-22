@@ -41,14 +41,15 @@
             <div>
                 <h2 class="text-3xl font-extrabold text-center mb-6">🌟 EMP SYS</h2>
                 <nav class="space-y-3 text-sm">
-                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
 
                     {% if user.role == "HR" %}
+                        <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
                         <a href="{% url 'employee_management' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">👥 Employee Mgmt</a>
                         <a href="{% url 'performance_record_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 Performance</a>
                         <a href="{% url 'analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Analytics</a>
 
                     {% elif user.role == "MANAGER" %}
+                        <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
                         {% comment %} <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">👤 Team</a> {% endcomment %}
                         <a href="{% url 'performance_record_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 Performance</a>
                         <a href="{% url 'evaluation_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📝 Evaluate</a>
@@ -56,15 +57,13 @@
                         <a href="{% url 'manager_report_dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Reports</a>
 
                     {% elif user.role == "HIGH_MANAGER" %}
+                        <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
                         {% comment %} <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📂 Manager View</a> {% endcomment %}
-                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📍 Branch Data</a>
                         <a href="{% url 'deep_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Deep Analytics</a>
 
                     {% elif user.role == "EMPLOYEE" %}
-                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">🧑 Personal Info</a>
-                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📞 Emergency</a>
-                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">💼 Job Info</a>
-                        <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Performance</a>
+                        <a href="{% url 'employee' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">🧑 Personal Info</a>
+                        <a href="{% url 'my_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Performance</a>
                     {% endif %}
                 </nav>
             </div>
