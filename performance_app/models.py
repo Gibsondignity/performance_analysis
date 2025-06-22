@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.employee_id
+        return f"{self.employee_id} - {self.role}"
 
 
 
@@ -52,24 +52,16 @@ class EmployeeProfile(models.Model):
     emergency_contact_name = models.CharField(max_length=100, null=True, blank=True)
     emergency_contact_phone = models.CharField(max_length=15, null=True, blank=True)
     emergency_relationship = models.CharField(max_length=50, null=True, blank=True)
-    # manager = models.ForeignKey(User, related_name='subordinates', null=True, blank=True, on_delete=models.SET_NULL)
+    data_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    data_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    created_by = models.ForeignKey(User, related_name='created_employee', on_delete=models.CASCADE, null=True, blank=True)
+    updated_by = models.ForeignKey(User, related_name='updated_employee', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.employee_id} - {self.first_name} {self.last_name}"
 
-
-# class ContactInfo(models.Model):
-#     employee = models.OneToOneField(EmployeeProfile, on_delete=models.CASCADE)
-#     phone = models.CharField(max_length=15)
-#     address = models.TextField()
-#     emergency_contact_name = models.CharField(max_length=100)
-#     emergency_contact_phone = models.CharField(max_length=15)
-#     emergency_relationship = models.CharField(max_length=50)
-
-
 class PerformanceRecord(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
-    date_recorded = models.DateField(default=0.00)
     sales_target = models.FloatField(default=0.00)
     sales_volume = models.FloatField(default=0.00)
     distribution_target = models.FloatField(default=0.00)
@@ -79,6 +71,16 @@ class PerformanceRecord(models.Model):
     customer_base_target = models.FloatField(default=0.00)
     customer_base_volume = models.FloatField(default=0.00)
     team_engagement_score = models.IntegerField(default=0)  # e.g., from 1 to 10
+
+    # NEW: Date range of performance period
+    performance_start_date = models.DateField(blank=True, null=True)
+    performance_end_date = models.DateField(blank=True, null=True)
+
+    # Existing timestamps
+    data_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    data_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    created_by = models.ForeignKey(User, related_name='created_records', on_delete=models.CASCADE, null=True, blank=True)
+    updated_by = models.ForeignKey(User, related_name='updated_records', on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def sales_achieved_percent(self):
@@ -97,12 +99,17 @@ class PerformanceRecord(models.Model):
         return (self.customer_base_volume / self.customer_base_target * 100) if self.customer_base_target else 0
 
 
+
 class Evaluation(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
-    evaluator = models.ForeignKey(User, on_delete=models.CASCADE)  # Typically a manager
+    evaluator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Typically a manager
     date = models.DateField(auto_now_add=True)
     remarks = models.TextField()
     performance_score = models.IntegerField()  # 1–10 scale or similar
+    data_created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    data_updated = models.DateTimeField(auto_now=True, blank=True, null=True)
+    created_by = models.ForeignKey(User, related_name='created_profiles', on_delete=models.CASCADE, null=True, blank=True)
+    updated_by = models.ForeignKey(User, related_name='updated_profiles', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f"Evaluation for {self.employee.user} by {self.evaluator.get_full_name()}"
+        return f"Evaluation for {self.employee.user} by {self.evaluator}"
