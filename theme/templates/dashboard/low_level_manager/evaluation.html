@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Performance Evaluations{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Employee Evaluations</h2>
+        <a href="{% url 'add_evaluation' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">➕ Add Evaluation</a>
+    </div>
+
+
+    <form method="get" class="mb-8">
+        <div class="flex flex-wrap md:flex-nowrap items-end gap-4">
+            <!-- Employee Filter -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <select name="employee" id="employee"
+                        class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+                    <option value="">All Employees</option>
+                    {% for employee in employees %}
+                        <option value="{{ employee.id }}" {% if employee.id == selected_employee %}selected{% endif %}>
+                            {{ employee }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex flex-col w-full md:w-1/4">
+                <select name="evaluator" id="employee"
+                        class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+                    <option value="">All Evaluators</option>
+                    {% for evaluator in evaluators %}
+                        <option value="{{ evaluator.id }}" {% if evaluator.id == selected_evaluator %}selected{% endif %}>
+                            {{ evaluator }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- End Date -->
+            <div class="flex flex-col w-full md:w-1/4">
+                <input type="date" name="date" id="date" value="{{ end_date }}"
+                       class="mt-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg shadow-sm">
+            </div>
+            <!-- Filter Button -->
+            <div class="flex flex-col w-full md:w-auto">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 mt-[28px] rounded-lg shadow transition whitespace-nowrap">
+                    Filter
+                </button>
+            </div>
+        </div>
+    </form><br><br>
+
+    <!-- Table -->
+    <table id="evaluationTable" class="display w-full">
+        <thead class="bg-gray-200">
+            <tr>
+                <th>Employee</th>
+                <th>Evaluator</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Remarks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eval in evaluations %}
+            <tr>
+                <td>{{ eval.employee }}</td>
+                <td>{{ eval.evaluator }}</td>
+                <td>{{ eval.date }}</td>
+                <td>{{ eval.performance_score }}/10</td>
+                <td>{{ eval.remarks|truncatechars:50 }}</td>
+                <td class="space-x-2">
+                    <a href="{% url 'edit_evaluation' eval.pk %}" class="bg-yellow-500 px-2 py-1 rounded text-black hover:bg-yellow-600 transition">✏️ Edit</a>
+                    <form method="POST" action="{% url 'delete_evaluation' eval.pk %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-red-600 px-2 py-1 rounded text-red-600 hover:bg-red-700 transition"
+                            onclick="return confirm('Are you sure you want to delete this evaluation?');">
+                            🗑️ Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+{% endblock extra_js %}
+
