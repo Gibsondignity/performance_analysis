@@ -45,7 +45,10 @@ def custom_login_view(request):
                 request.session['first_name'] = ''
                 request.session['last_name'] = ''
 
-            return redirect('dashboard')
+            if user.roles == 'EMPLOYEE':
+                return redirect('employee')
+            else:
+                return redirect('dashboard')
 
         error = "Invalid Employee ID or password"
 
@@ -661,3 +664,65 @@ def deep_analytics(request):
     }
 
     return render(request, 'dashboard/high_level_manager/reports.html', context)
+
+
+
+
+
+@login_required
+def employee(request):
+
+    employee = EmployeeProfile.objects.get(user=request.user)
+    return render(request, 'dashboard/employee/employee_info.html', {'employee': employee})
+
+
+
+
+@login_required
+def my_analytics_view(request):
+    user = request.user
+    employee = getattr(user, 'employeeprofile', None)
+
+    if not employee:
+        return render(request, 'errors/403.html')
+
+    records = PerformanceRecord.objects.filter(employee=employee).order_by('performance_start_date')
+    evaluations = Evaluation.objects.filter(employee=employee).order_by('date')
+
+    # Filters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date:
+        records = records.filter(performance_start_date__gte=start_date)
+        evaluations = evaluations.filter(date__gte=start_date)
+    if end_date:
+        records = records.filter(performance_end_date__lte=end_date)
+        evaluations = evaluations.filter(date__lte=end_date)
+
+    # Summary Stats
+    avg_sales = round(sum(r.sales_achieved_percent for r in records) / len(records), 2) if records else 0
+    avg_revenue = round(sum(r.revenue_achieved_percent for r in records) / len(records), 2) if records else 0
+    avg_engagement = round(sum(r.team_engagement_score for r in records) / len(records), 2) if records else 0
+
+    # Chart Data
+    performance_chart = {
+        'labels': [str(r.performance_start_date) for r in records],
+        'sales': [round(r.sales_achieved_percent, 2) for r in records],
+        'revenue': [round(r.revenue_achieved_percent, 2) for r in records]
+    }
+
+    evaluation_chart = {
+        'labels': [str(e.date) for e in evaluations],
+        'scores': [e.performance_score for e in evaluations]
+    }
+
+    context = {
+        'avg_sales': avg_sales,
+        'avg_revenue': avg_revenue,
+        'avg_engagement': avg_engagement,
+        'performance_chart_data': json.dumps(performance_chart),
+        'evaluation_chart_data': json.dumps(evaluation_chart),
+    }
+
+    return render(request, 'dashboard/employee/emplyee_analytics.html', context)

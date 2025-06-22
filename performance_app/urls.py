@@ -33,4 +33,9 @@ urlpatterns = [
 
     # HIGH LEVEL MANAGER DASHBOARD
     path('deep_analytics/', views.deep_analytics, name='deep_analytics'),
+
+
+    # EMPLOYEE DASHBOARD
+    path('employee', views.employee, name='employee'),
+    path('my-analytics/', views.my_analytics_view, name='my_analytics'),
 ]
