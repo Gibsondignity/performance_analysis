@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Manager Analytics & Reports{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="mb-6 flex flex-wrap md:flex-nowrap gap-4 items-end justify-between">
+        <form method="get" class="flex flex-wrap md:flex-nowrap gap-4">
+            <div>
+                <label class="text-sm">Start Date</label>
+                <input type="date" name="start_date" value="{{ request.GET.start_date }}" class="rounded border-gray-300 mt-1">
+            </div>
+            <div>
+                <label class="text-sm">End Date</label>
+                <input type="date" name="end_date" value="{{ request.GET.end_date }}" class="rounded border-gray-300 mt-1">
+            </div>
+            <div>
+                <label class="text-sm">Department</label>
+                <select name="department" class="rounded border-gray-300 mt-1">
+                    <option value="">All</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept }}" {% if request.GET.department == dept %}selected{% endif %}>{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-[30px]">Filter</button>
+        </form>
+
+        <form method="post" action="{% url 'export_manager_report' %}">
+            {% csrf_token %}
+            <input type="hidden" name="start_date" value="{{ request.GET.start_date }}">
+            <input type="hidden" name="end_date" value="{{ request.GET.end_date }}">
+            <input type="hidden" name="department" value="{{ request.GET.department }}">
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export CSV</button>
+        </form>
+    </div>
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Sales Achieved</h3>
+            <p class="text-2xl font-bold text-blue-600">{{ avg_sales }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Revenue Achieved</h3>
+            <p class="text-2xl font-bold text-green-600">{{ avg_revenue }}%</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Engagement</h3>
+            <p class="text-2xl font-bold text-purple-600">{{ avg_engagement }}/10</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow text-center">
+            <h3 class="text-sm text-gray-600">Avg. Evaluation Score</h3>
+            <p class="text-2xl font-bold text-emerald-600">{{ avg_evaluation }}/10</p>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="font-semibold mb-2">Sales Achievement by Department</h3>
+            <canvas id="salesBarChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="font-semibold mb-2">Revenue Distribution</h3>
+            <canvas id="revenuePieChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow col-span-1 md:col-span-2">
+            <h3 class="font-semibold mb-2">Engagement Over Time</h3>
+            <canvas id="engagementLineChart"></canvas>
+        </div>
+        <div class="bg-white p-6 rounded shadow col-span-1 md:col-span-2">
+            <h3 class="font-semibold mb-2">Evaluation Scores by Employee</h3>
+            <canvas id="evaluationBarChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const salesChartData = {{ sales_chart_data|safe }};
+    const revenueChartData = {{ revenue_chart_data|safe }};
+    const engagementChartData = {{ engagement_chart_data|safe }};
+    const evaluationChartData = {{ evaluation_chart_data|safe }};
+
+    new Chart(document.getElementById('salesBarChart'), {
+        type: 'bar',
+        data: {
+            labels: salesChartData.labels,
+            datasets: [{
+                label: '% Sales Achieved',
+                data: salesChartData.data,
+                backgroundColor: 'rgba(59, 130, 246, 0.7)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 150 } },
+            animation: { duration: 800 }
+        }
+    });
+
+    new Chart(document.getElementById('revenuePieChart'), {
+        type: 'pie',
+        data: {
+            labels: revenueChartData.labels,
+            datasets: [{
+                data: revenueChartData.data,
+                backgroundColor: ['#34d399', '#fbbf24', '#60a5fa', '#f87171', '#a78bfa']
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: { duration: 800 }
+        }
+    });
+
+    new Chart(document.getElementById('engagementLineChart'), {
+        type: 'line',
+        data: {
+            labels: engagementChartData.labels,
+            datasets: [{
+                label: 'Engagement Score',
+                data: engagementChartData.data,
+                borderColor: '#9333ea',
+                fill: false,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: { duration: 800 }
+        }
+    });
+
+    new Chart(document.getElementById('evaluationBarChart'), {
+        type: 'bar',
+        data: {
+            labels: evaluationChartData.labels,
+            datasets: [{
+                label: 'Avg Evaluation Score',
+                data: evaluationChartData.data,
+                backgroundColor: 'rgba(16, 185, 129, 0.7)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 10 } },
+            animation: { duration: 800 }
+        }
+    });
+</script>
+{% endblock %}
