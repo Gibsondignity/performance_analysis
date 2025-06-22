@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Edit Evaluation{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-10 px-6 py-8 bg-white shadow-xl rounded-xl animate__animated animate__fadeIn">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Edit Evaluation</h2>
+
+    {% if form.errors %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-inner">
+            <p class="font-bold">There were errors in your submission:</p>
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Employee -->
+            <div>
+                <label class="text-gray-700 font-medium">Employee</label>
+                {{ form.employee }}
+            </div>
+
+            <!-- Performance Score -->
+            <div>
+                <label class="text-gray-700 font-medium">Performance Score (1–10)</label>
+                {{ form.performance_score }}
+            </div>
+
+            <!-- Remarks -->
+            <div class="md:col-span-2">
+                <label class="text-gray-700 font-medium">Remarks</label>
+                {{ form.remarks }}
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-5 my-8">
+            <a href="{% url 'evaluation_list' %}"
+               class="group relative inline-flex items-center px-6 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 border border-gray-300 shadow hover:bg-gray-200 hover:shadow-md focus:outline-none transition-all duration-300 ease-in-out">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="group relative inline-flex items-center px-6 py-2 text-sm font-medium rounded-lg bg-green-600 text-white shadow-lg hover:bg-green-700 hover:shadow-xl focus:outline-none transition-all duration-300 ease-in-out">
+                Update
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
