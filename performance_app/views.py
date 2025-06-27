@@ -669,6 +669,7 @@ def deep_analytics(request):
 
 
 
+# EMPLOYEE VIEWS
 @login_required
 def employee(request):
 
@@ -726,3 +727,35 @@ def my_analytics_view(request):
     }
 
     return render(request, 'dashboard/employee/emplyee_analytics.html', context)
+
+
+
+
+
+@login_required
+def my_evaluation_list(request):
+    evaluations = Evaluation.objects.select_related('employee', 'evaluator').order_by('-date')
+    employees = EmployeeProfile.objects.all()
+    evaluators = User.objects.filter(is_staff=True)  # assuming managers are staff users
+
+    evaluator_id = request.GET.get('evaluator')
+    date = request.GET.get('date')
+
+    user = request.user
+    employee = getattr(user, 'employeeprofile', None)
+    if not employee:
+        return render(request, 'errors/403.html')
+    if employee:
+        evaluations = evaluations.filter(employee=employee)
+    if evaluator_id:
+        evaluations = evaluations.filter(evaluator_id=evaluator_id)
+    if date:
+        evaluations = evaluations.filter(date=date)
+
+    return render(request, 'dashboard/low_level_manager/evaluation.html', {
+        'evaluations': evaluations,
+        'employees': employees,
+        'evaluators': evaluators,
+        'selected_evaluator': int(evaluator_id) if evaluator_id else None,
+        'selected_date': date,
+    })

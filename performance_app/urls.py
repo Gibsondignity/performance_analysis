@@ -38,4 +38,5 @@ urlpatterns = [
     # EMPLOYEE DASHBOARD
     path('employee', views.employee, name='employee'),
     path('my-analytics/', views.my_analytics_view, name='my_analytics'),
+    path('my_evaluation_list/', views.my_evaluation_list, name='my_evaluation_list'),
 ]
