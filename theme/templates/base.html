@@ -9,11 +9,11 @@
     <script src="https://unpkg.com/alpinejs@3.13.2" defer></script>
     <style>
         .gradient-bg {
-            background: linear-gradient(to right, #1D2671, #C33764);
+            background: linear-gradient(to right, #7dc2de, #7dc2de);
         }
 
         .sidebar-gradient {
-            background: linear-gradient(to bottom, #C33764, #1D2671);
+            background: linear-gradient(to bottom, #7dc2de, #7dc2de);
         }
 
         .btn-hover:hover {
@@ -39,7 +39,7 @@
     <aside :class="sidebarOpen ? 'block' : 'hidden md:block'" class="sidebar-gradient w-64 text-white shadow-2xl z-40">
         <div class="p-6 flex flex-col justify-between h-full">
             <div>
-                <h2 class="text-3xl font-extrabold text-center mb-6">🌟 EMP SYS</h2>
+                <h2 class="text-3xl font-extrabold text-center mb-6"> EMP SYS</h2>
                 <nav class="space-y-3 text-sm">
 
                     {% if user.role == "HR" %}
@@ -55,6 +55,14 @@
                         <a href="{% url 'evaluation_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📝 Evaluate</a>
                         <a href="{% url 'analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Analytics</a>
                         <a href="{% url 'manager_report_dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Reports</a>
+                    
+                    {% elif user.role == "MIDDLE_MANAGER" %}
+                        <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
+                        {% comment %} <a href="#" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">👤 Team</a> {% endcomment %}
+                        <a href="{% url 'performance_record_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 Performance</a>
+                        <a href="{% url 'evaluation_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📝 Evaluate</a>
+                        <a href="{% url 'analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Analytics</a>
+                        <a href="{% url 'manager_report_dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📊 Reports</a>
 
                     {% elif user.role == "HIGH_MANAGER" %}
                         <a href="{% url 'dashboard' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] transition btn-hover">🏠 Dashboard</a>
@@ -64,6 +72,7 @@
                     {% elif user.role == "EMPLOYEE" %}
                         <a href="{% url 'employee' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">🧑 Personal Info</a>
                         <a href="{% url 'my_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Performance</a>
+                        <a href="{% url 'my_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Evaluation List</a>
                     {% endif %}
                 </nav>
             </div>
