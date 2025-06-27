@@ -72,7 +72,7 @@
                     {% elif user.role == "EMPLOYEE" %}
                         <a href="{% url 'employee' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">🧑 Personal Info</a>
                         <a href="{% url 'my_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Performance</a>
-                        <a href="{% url 'my_analytics' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Evaluation List</a>
+                        <a href="{% url 'my_evaluation_list' %}" class="block px-4 py-2 rounded-md hover:bg-white hover:text-[#1D2671] btn-hover">📈 My Evaluation List</a>
                     {% endif %}
                 </nav>
             </div>
