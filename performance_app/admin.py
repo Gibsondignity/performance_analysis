@@ -3,10 +3,10 @@ from .models import *
 from .forms import *
 
 # Register your models here.
-admin.site.site_header = "Performance App Admin"
+admin.site.site_header = "EDPMS ADMIN PORTAL"
 
-admin.site.site_title = "Performance App Admin Portal"
-admin.site.index_title = "Welcome to the Performance App Admin Portal"
+admin.site.site_title = "EDPMS ADMIN PORTAL"
+admin.site.index_title = "WELCOME TO THE EDPMS ADMIN PORTAL"
 # admin.site.register(User)
 admin.site.register(EmployeeProfile)
 # admin.site.register(ContactInfo)

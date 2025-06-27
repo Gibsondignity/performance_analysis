@@ -45,7 +45,7 @@ def custom_login_view(request):
                 request.session['first_name'] = ''
                 request.session['last_name'] = ''
 
-            if user.roles == 'EMPLOYEE':
+            if user.role == 'EMPLOYEE':
                 return redirect('employee')
             else:
                 return redirect('dashboard')

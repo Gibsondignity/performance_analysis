@@ -20,6 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ('HR', 'HR'),
         ('HIGH_MANAGER', 'High Level Manager'),
+        ('MIDDLE_MANAGER', 'Middle Level Manager'),
         ('MANAGER', 'Low Level Manager'),
         ('EMPLOYEE', 'Employee'),
     ]
