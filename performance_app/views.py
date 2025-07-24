@@ -31,7 +31,7 @@ def custom_login_view(request):
 
         if user:
             login(request, user)
-            profile = EmployeeProfile.objects.get(user=user)
+            profile = EmployeeProfile.objects.filter(user=user).first()
             # Fetch employee profile details
             try:
                 
@@ -247,9 +247,26 @@ def performance_records(request):
 def performance_record_list(request):
     """
     List all performance records with optional filtering by employee and performance date range.
+    Low level managers should only see employees, not other managers.
     """
+    user = request.user
+
+    # Base queryset for performance records
     records = PerformanceRecord.objects.select_related('employee', 'employee__user').order_by('-performance_start_date')
-    employees = EmployeeProfile.objects.select_related('user').all()
+
+    # Base queryset for employees
+    employees = EmployeeProfile.objects.select_related('user')
+
+    # Restrict employee list for Low Level Managers
+    if user.role == 'MANAGER':
+        employees = employees.filter(user__role='EMPLOYEE')  # Only show actual employees
+    elif user.role == 'MIDDLE_MANAGER':
+        employees = employees.filter(user__role='MANAGER')
+    elif user.role == 'HIGH_LEVEL_MANAGER':
+        employees = employees.filter(user__role='MIDDLE_MANAGER')
+    else:
+        employees = None
+    
 
     # Get filter values from GET request
     employee_id = request.GET.get('employee')
@@ -265,13 +282,16 @@ def performance_record_list(request):
             performance_end_date__lte=end_date
         )
 
-    return render(request, 'dashboard/low_level_manager/performance_records.html', {
+    # Pass data to template
+    context = {
         'records': records,
         'employees': employees,
         'selected_employee': int(employee_id) if employee_id else None,
         'start_date': start_date,
         'end_date': end_date,
-    })
+    }
+
+    return render(request, 'dashboard/low_level_manager/performance_records.html', context)
 
 
 
