@@ -13,6 +13,7 @@ from django.utils.timezone import now
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserForm, EmployeeProfileForm, EditUserForm, PerformanceRecordForm, EvaluationForm
+from .models import generate_ai_evaluation, Evaluation
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Avg, ExpressionWrapper, F, FloatField
@@ -303,7 +304,16 @@ def add_performance_record(request):
     if request.method == 'POST':
         form = PerformanceRecordForm(request.POST)
         if form.is_valid():
-            form.save()
+            performance_record = form.save()
+            # Generate AI evaluation for this performance record
+            ai_evaluation_data = generate_ai_evaluation(performance_record)
+            Evaluation.objects.create(
+                employee=performance_record.employee,
+                performance_score=ai_evaluation_data['performance_score'],
+                remarks=ai_evaluation_data['remarks'],
+                evaluation_type='AI',
+                created_by=request.user if request.user.is_authenticated else None
+            )
             messages.success(request, '✅ Performance record added successfully.')
             return redirect('performance_record_list')
         else:
@@ -324,7 +334,16 @@ def edit_performance_record(request, pk):
     if request.method == 'POST':
         form = PerformanceRecordForm(request.POST, instance=record)
         if form.is_valid():
-            form.save()
+            performance_record = form.save()
+            # Generate AI evaluation for this performance record
+            ai_evaluation_data = generate_ai_evaluation(performance_record)
+            Evaluation.objects.create(
+                employee=performance_record.employee,
+                performance_score=ai_evaluation_data['performance_score'],
+                remarks=ai_evaluation_data['remarks'],
+                evaluation_type='AI',
+                created_by=request.user if request.user.is_authenticated else None
+            )
             messages.success(request, '✅ Performance record updated successfully.')
             return redirect('performance_record_list')
         else:
@@ -553,7 +572,9 @@ def add_evaluation(request):
             if form.is_valid():
                 evaluation = form.save(commit=False)
                 evaluation.created_by = request.user
-                evaluation.evaluator = request.user 
+                evaluation.evaluator = request.user
+                # Ensure manual evaluations are marked as such
+                evaluation.evaluation_type = 'MANUAL'
                 evaluation.save()
                 messages.success(request, '✅ Evaluation added successfully.')
                 return redirect('evaluation_list')
@@ -562,7 +583,7 @@ def add_evaluation(request):
         except EmployeeProfile.DoesNotExist:
             messages.error(request, '❌ Employee profile not found. Please contact HR.')
     else:
-        form = EvaluationForm()
+        form = EvaluationForm(initial={'evaluation_type': 'MANUAL'})
 
     return render(request, 'dashboard/low_level_manager/add_evaluation.html', {'form': form})
 
@@ -571,11 +592,18 @@ def add_evaluation(request):
 def edit_evaluation(request, pk):
     evaluation = get_object_or_404(Evaluation, pk=pk)
 
+    # Prevent editing of AI-generated evaluations
+    if evaluation.evaluation_type == 'AI':
+        messages.error(request, '❌ AI-generated evaluations cannot be edited.')
+        return redirect('evaluation_list')
+
     if request.method == 'POST':
         form = EvaluationForm(request.POST, instance=evaluation)
         if form.is_valid():
             evaluation = form.save(commit=False)
             evaluation.updated_by = request.user
+            # Ensure manual evaluations remain marked as such
+            evaluation.evaluation_type = 'MANUAL'
             evaluation.save()
             messages.success(request, '✅ Evaluation updated successfully.')
             return redirect('evaluation_list')
@@ -590,6 +618,11 @@ def edit_evaluation(request, pk):
 @login_required
 def delete_evaluation(request, pk):
     evaluation = get_object_or_404(Evaluation, pk=pk)
+
+    # Prevent deletion of AI-generated evaluations
+    if evaluation.evaluation_type == 'AI':
+        messages.error(request, '❌ AI-generated evaluations cannot be deleted.')
+        return redirect('evaluation_list')
 
     if request.method == 'POST':
         evaluation.delete()

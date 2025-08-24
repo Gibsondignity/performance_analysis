@@ -306,7 +306,7 @@ class PerformanceRecordForm(forms.ModelForm):
 class EvaluationForm(forms.ModelForm):
     class Meta:
         model = Evaluation
-        fields = ['employee', 'remarks', 'performance_score']
+        fields = ['employee', 'remarks', 'performance_score', 'evaluation_type']
         widgets = {
             'employee': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -323,6 +323,7 @@ class EvaluationForm(forms.ModelForm):
                 'max': 10,
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
+            'evaluation_type': forms.HiddenInput(),
             'remarks': Textarea(attrs={
                 'rows': 4,
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
