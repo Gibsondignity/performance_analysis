@@ -40,7 +40,12 @@
             {% for eval in evaluations %}
             <tr>
                 <td>{{ eval.employee }}</td>
-                <td>{{ eval.evaluator }}</td>
+                <td>
+                    {{ eval.evaluator }}
+                    {% if eval.evaluation_type == 'AI' %}
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded ml-2">AI</span>
+                    {% endif %}
+                </td>
                 <td>{{ eval.date }}</td>
                 <td>{{ eval.performance_score }}/10</td>
                 <td>{{ eval.remarks|truncatechars:50 }}</td>
