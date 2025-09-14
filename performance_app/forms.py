@@ -56,12 +56,8 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['employee_id', 'password', 'role', 'branch', 'is_active']
+        fields = ['password', 'role', 'branch', 'is_active']
         widgets = {
-            'employee_id': TextInput(attrs={
-                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Employee ID'
-            }),
             'role': Select(attrs={
                 'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
@@ -147,7 +143,7 @@ class EditUserForm(forms.ModelForm):
         widgets = {
             'employee_id': TextInput(attrs={
                 'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
-                'placeholder': 'Employee ID'
+                'readonly': 'readonly'
             }),
             'role': Select(attrs={
                 'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -306,7 +302,7 @@ class PerformanceRecordForm(forms.ModelForm):
 class EvaluationForm(forms.ModelForm):
     class Meta:
         model = Evaluation
-        fields = ['employee', 'remarks', 'performance_score', 'evaluation_type']
+        fields = ['employee', 'evaluator', 'remarks', 'performance_score', 'evaluation_type', 'strengths', 'areas_for_improvement', 'goals_achieved', 'development_needs']
         widgets = {
             'employee': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
@@ -329,4 +325,32 @@ class EvaluationForm(forms.ModelForm):
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
                 'placeholder': 'Write evaluation remarks here...'
             }),
+            'strengths': Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'List key strengths...'
+            }),
+            'areas_for_improvement': Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Areas that need improvement...'
+            }),
+            'goals_achieved': Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Goals achieved this period...'
+            }),
+            'development_needs': Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Development needs and training suggestions...'
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['employee'].queryset = EmployeeProfile.objects.select_related('user')
+        self.fields['evaluator'].queryset = User.objects.all()
+        # Set current user as default evaluator if not set
+        if 'evaluator' in self.fields and not self.instance.pk:
+            self.fields['evaluator'].initial = kwargs.get('initial', {}).get('evaluator')
