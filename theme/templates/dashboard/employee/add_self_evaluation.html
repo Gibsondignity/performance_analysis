@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Self Evaluation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-check"></i> Self Evaluation
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'my_evaluation_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to My Evaluations
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Self Evaluation:</strong> This is your opportunity to reflect on your performance,
+                        achievements, and areas for growth. Be honest and constructive in your assessment.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.performance_score.id_for_label }}">
+                                        <i class="fas fa-star"></i> Overall Performance Score (1-10)
+                                    </label>
+                                    {{ form.performance_score }}
+                                    <small class="form-text text-muted">
+                                        Rate your overall performance this period
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Evaluation Type</label>
+                                    <input type="text" class="form-control" value="Self Evaluation" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.strengths.id_for_label }}">
+                                <i class="fas fa-plus-circle"></i> Key Strengths
+                            </label>
+                            {{ form.strengths }}
+                            <small class="form-text text-muted">
+                                What are you doing well? What are your strongest contributions?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.areas_for_improvement.id_for_label }}">
+                                <i class="fas fa-chart-line"></i> Areas for Improvement
+                            </label>
+                            {{ form.areas_for_improvement }}
+                            <small class="form-text text-muted">
+                                What areas do you think you could improve? Be specific and constructive.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.goals_achieved.id_for_label }}">
+                                <i class="fas fa-trophy"></i> Goals Achieved
+                            </label>
+                            {{ form.goals_achieved }}
+                            <small class="form-text text-muted">
+                                What goals or objectives did you successfully complete?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.development_needs.id_for_label }}">
+                                <i class="fas fa-graduation-cap"></i> Development Needs
+                            </label>
+                            {{ form.development_needs }}
+                            <small class="form-text text-muted">
+                                What training, skills, or resources do you need to grow professionally?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.remarks.id_for_label }}">
+                                <i class="fas fa-comment"></i> Additional Comments
+                            </label>
+                            {{ form.remarks }}
+                            <small class="form-text text-muted">
+                                Any other thoughts or reflections you'd like to share
+                            </small>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        {{ form.employee }}
+                        {{ form.evaluator }}
+                        {{ form.evaluation_type }}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Self Evaluation
+                            </button>
+                            <a href="{% url 'my_evaluation_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add any client-side validation or enhancements here
+    $('form').on('submit', function(e) {
+        var score = $('#{{ form.performance_score.id_for_label }}').val();
+        if (score < 1 || score > 10) {
+            alert('Performance score must be between 1 and 10');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
