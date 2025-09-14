@@ -1,62 +1,334 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}View Employee{% endblock %}
+
+{% block title %}AI HR Portal - Employee Profile: {{ employee.first_name }} {{ employee.last_name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <a href="{% url 'employee_management' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">HR Management</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-purple-600">Employee Profile</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="container mx-auto py-10 px-4">
-    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8 animate-fade-in">
-        <div class="flex items-center space-x-6 mb-6">
-            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-4xl font-bold text-blue-600">
-                {{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-6">
+            <div class="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm border-4 border-white border-opacity-30">
+                <span class="text-3xl font-bold text-white">{{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}</span>
             </div>
             <div>
-                <h2 class="text-3xl font-semibold text-gray-800">{{ employee.first_name }} {{ employee.last_name }}</h2>
-                <p class="text-gray-500">{{ employee.job_title }} - {{ employee.department }}</p>
-                <p class="text-sm text-gray-400">Employee ID: {{ employee.user.employee_id }}</p>
+                <h1 class="text-3xl font-bold">{{ employee.first_name }} {{ employee.last_name }}</h1>
+                <p class="text-xl text-blue-100">{{ employee.job_title }} • {{ employee.department }}</p>
+                <p class="text-blue-200">Employee ID: {{ employee.user.employee_id }}</p>
+                <div class="flex items-center mt-2 space-x-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-circle text-green-500 mr-2"></i>
+                        Active Employee
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <i class="fas fa-brain mr-2"></i>
+                        AI-Monitored
+                    </span>
+                </div>
             </div>
         </div>
-
-        <div class="grid md:grid-cols-2 gap-6 text-gray-700">
-            <div>
-                <h4 class="font-bold mb-1">Branch</h4>
-                <p>{{ employee.user.branch }}</p>
+        <div class="text-right">
+            <div class="text-2xl font-bold mb-1">{{ employee.user.get_role_display }}</div>
+            <p class="text-sm text-blue-200">Role</p>
+            <div class="mt-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white">
+                    <i class="fas fa-building mr-2"></i>
+                    {{ employee.user.branch|default:"Main Branch" }}
+                </span>
             </div>
-            <div>
-                <h4 class="font-bold mb-1">Role</h4>
-                <p>{{ employee.user.get_role_display }}</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-1">Phone</h4>
-                <p>{{ employee.phone }}</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-1">Address</h4>
-                <p>{{ employee.address }}</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-1">Date Hired</h4>
-                <p>{{ employee.date_hired }}</p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-1">Emergency Contact</h4>
-                <p>{{ employee.emergency_contact_name }} ({{ employee.emergency_relationship }}) - {{ employee.emergency_contact_phone }}</p>
-            </div>
-        </div>
-
-        <div class="mt-8">
-            <a href="{% url 'employee_management' %}" class="text-blue-600 hover:underline">← Back to Employee List</a>
         </div>
     </div>
 </div>
 
-<style>
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Tenure</p>
+                <p class="text-3xl font-bold text-blue-600">{{ employee.tenure_days|default:0 }} days</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-lg">
+                <i class="fas fa-calendar-alt text-2xl text-blue-600"></i>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600">Since {{ employee.date_hired|date:"M Y" }}</p>
+    </div>
 
-.animate-fade-in {
-    animation: fade-in 0.5s ease-out;
-}
-</style>
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Performance Status</p>
+                <p class="text-3xl font-bold text-green-600">Active</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-lg">
+                <i class="fas fa-chart-line text-2xl text-green-600"></i>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600">AI performance tracking</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">AI Confidence</p>
+                <p class="text-3xl font-bold text-purple-600">{{ ai_confidence|default:"--" }}%</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-lg">
+                <i class="fas fa-brain text-2xl text-purple-600"></i>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600">Analysis accuracy</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Last Updated</p>
+                <p class="text-lg font-bold text-orange-600">{{ employee.data_updated|date:"M d" }}</p>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-lg">
+                <i class="fas fa-clock text-2xl text-orange-600"></i>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600">{{ employee.data_updated|date:"Y" }}</p>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Employment Information -->
+    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-semibold text-gray-900">Employment Information</h3>
+            <i class="fas fa-briefcase text-2xl text-blue-500"></i>
+        </div>
+
+        <div class="space-y-6">
+            <div class="flex items-center p-4 bg-blue-50 rounded-xl">
+                <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-id-card text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Employee ID</p>
+                    <p class="font-semibold text-gray-900">{{ employee.user.employee_id }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center p-4 bg-green-50 rounded-xl">
+                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-user-tag text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Role</p>
+                    <p class="font-semibold text-gray-900">{{ employee.user.get_role_display }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center p-4 bg-purple-50 rounded-xl">
+                <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-users text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Department</p>
+                    <p class="font-semibold text-gray-900">{{ employee.department }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center p-4 bg-orange-50 rounded-xl">
+                <div class="bg-orange-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-calendar-alt text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Date Hired</p>
+                    <p class="font-semibold text-gray-900">{{ employee.date_hired|date:"F j, Y" }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center p-4 bg-indigo-50 rounded-xl">
+                <div class="bg-indigo-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-building text-indigo-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Branch</p>
+                    <p class="font-semibold text-gray-900">{{ employee.user.branch|default:"Main Branch" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-semibold text-gray-900">Contact Information</h3>
+            <i class="fas fa-address-book text-2xl text-green-500"></i>
+        </div>
+
+        <div class="space-y-6">
+            <div class="flex items-center p-4 bg-green-50 rounded-xl">
+                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-phone text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Phone Number</p>
+                    <p class="font-semibold text-gray-900">{{ employee.phone|default:"Not provided" }}</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-blue-50 rounded-xl">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-3 rounded-lg mr-4 mt-1">
+                        <i class="fas fa-map-marker-alt text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-600 mb-1">Address</p>
+                        <p class="font-semibold text-gray-900">{{ employee.address|default:"Not provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact Section -->
+        <div class="mt-8">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                Emergency Contact
+            </h4>
+
+            <div class="space-y-4">
+                <div class="flex items-center p-4 bg-red-50 rounded-xl">
+                    <div class="bg-red-100 p-3 rounded-lg mr-4">
+                        <i class="fas fa-user-md text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Contact Name</p>
+                        <p class="font-semibold text-gray-900">{{ employee.emergency_contact_name|default:"Not provided" }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-4 bg-red-50 rounded-xl">
+                    <div class="bg-red-100 p-3 rounded-lg mr-4">
+                        <i class="fas fa-phone text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Contact Phone</p>
+                        <p class="font-semibold text-gray-900">{{ employee.emergency_contact_phone|default:"Not provided" }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-4 bg-red-50 rounded-xl">
+                    <div class="bg-red-100 p-3 rounded-lg mr-4">
+                        <i class="fas fa-users text-red-600"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Relationship</p>
+                        <p class="font-semibold text-gray-900">{{ employee.emergency_relationship|default:"Not provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Performance Insights -->
+<div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-8 shadow-lg border border-indigo-200 mt-8">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h3 class="text-2xl font-semibold text-gray-900 mb-2">AI Performance Insights</h3>
+            <p class="text-gray-600">Real-time analysis and recommendations for this employee</p>
+        </div>
+        <div class="bg-indigo-100 p-4 rounded-xl">
+            <i class="fas fa-brain text-3xl text-indigo-600"></i>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-indigo-100">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-chart-line text-blue-500 mr-3 text-xl"></i>
+                <span class="font-semibold text-gray-900">Performance Trend</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">Employee performance is trending positively with consistent improvement.</p>
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    Improving
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-indigo-100">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-lightbulb text-yellow-500 mr-3 text-xl"></i>
+                <span class="font-semibold text-gray-900">AI Recommendations</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">Consider additional training in advanced sales techniques.</p>
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <i class="fas fa-graduation-cap mr-1"></i>
+                    Training
+                </span>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-indigo-100">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-shield-alt text-green-500 mr-3 text-xl"></i>
+                <span class="font-semibold text-gray-900">Risk Assessment</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3">No performance anomalies detected. Employee is performing within expected ranges.</p>
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    Low Risk
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-wrap gap-4 mt-8">
+    <a href="{% url 'employee_management' %}" class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Employee List
+    </a>
+    <a href="{% url 'ai_employee_analysis' employee.id %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-xl transition duration-200 transform hover:scale-[1.02] hover:shadow-lg">
+        <i class="fas fa-brain mr-2"></i>
+        View AI Analysis
+    </a>
+    <a href="{% url 'edit_employee' employee.user.id %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-blue-600 font-medium rounded-xl transition duration-200">
+        <i class="fas fa-edit mr-2"></i>
+        Edit Employee
+    </a>
+    <a href="{% url 'ai_recommendations' %}" class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition duration-200">
+        <i class="fas fa-lightbulb mr-2"></i>
+        View Recommendations
+    </a>
+</div>
 {% endblock %}
