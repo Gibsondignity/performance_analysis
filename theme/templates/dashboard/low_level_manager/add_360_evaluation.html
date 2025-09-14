@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}360-Degree Evaluation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users"></i> 360-Degree Evaluation for {{ employee.first_name }} {{ employee.last_name }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'evaluation_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Evaluations
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>360-Degree Evaluation:</strong> This comprehensive evaluation combines feedback from multiple sources
+                        to provide a well-rounded assessment of the employee's performance.
+                    </div>
+
+                    <!-- Employee Info Card -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Employee Information</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Name:</strong> {{ employee.first_name }} {{ employee.last_name }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Role:</strong> {{ employee.user.get_role_display }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Department:</strong> {{ employee.department }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Sources Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card {% if self_evaluation %}border-success{% else %}border-warning{% endif %}">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user-check"></i> Self Evaluation
+                                    </h5>
+                                    {% if self_evaluation %}
+                                    <p class="text-success">Score: {{ self_evaluation.performance_score }}/10</p>
+                                    <small class="text-muted">{{ self_evaluation.date|date:"M d, Y" }}</small>
+                                    {% else %}
+                                    <p class="text-warning">Not submitted</p>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <strong>Weight: {{ weights.self }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card {% if manager_evaluation %}border-success{% else %}border-warning{% endif %}">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user-tie"></i> Manager Evaluation
+                                    </h5>
+                                    {% if manager_evaluation %}
+                                    <p class="text-success">Score: {{ manager_evaluation.performance_score }}/10</p>
+                                    <small class="text-muted">{{ manager_evaluation.date|date:"M d, Y" }}</small>
+                                    {% else %}
+                                    <p class="text-warning">Not submitted</p>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <strong>Weight: {{ weights.manager }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card {% if peer_reviews %}border-success{% else %}border-warning{% endif %}">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users"></i> Peer Reviews
+                                    </h5>
+                                    {% if peer_reviews %}
+                                    <p class="text-success">Average: {% widthratio peer_reviews|length 1 1 %} review{{ peer_reviews|pluralize }}</p>
+                                    <small class="text-muted">
+                                        Avg Score: {% for review in peer_reviews %}
+                                            {% if forloop.first %}{{ review.overall_rating }}{% endif %}
+                                        {% empty %}N/A{% endfor %}/10
+                                    </small>
+                                    {% else %}
+                                    <p class="text-warning">No reviews</p>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <strong>Weight: {{ weights.peer }}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Feedback Display -->
+                    {% if self_evaluation %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-check"></i> Self Evaluation Details</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if self_evaluation.strengths %}
+                            <p><strong>Strengths:</strong> {{ self_evaluation.strengths }}</p>
+                            {% endif %}
+                            {% if self_evaluation.areas_for_improvement %}
+                            <p><strong>Areas for Improvement:</strong> {{ self_evaluation.areas_for_improvement }}</p>
+                            {% endif %}
+                            {% if self_evaluation.remarks %}
+                            <p><strong>Comments:</strong> {{ self_evaluation.remarks }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if manager_evaluation %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-tie"></i> Manager Evaluation Details</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if manager_evaluation.strengths %}
+                            <p><strong>Strengths:</strong> {{ manager_evaluation.strengths }}</p>
+                            {% endif %}
+                            {% if manager_evaluation.areas_for_improvement %}
+                            <p><strong>Areas for Improvement:</strong> {{ manager_evaluation.areas_for_improvement }}</p>
+                            {% endif %}
+                            {% if manager_evaluation.remarks %}
+                            <p><strong>Comments:</strong> {{ manager_evaluation.remarks }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if peer_reviews %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5><i class="fas fa-users"></i> Peer Review Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for review in peer_reviews %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Rating: {{ review.overall_rating }}/10</strong>
+                                    <small class="text-muted">{{ review.review_date|date:"M d, Y" }}</small>
+                                </div>
+                                {% if review.strengths %}
+                                <p><strong>Strengths:</strong> {{ review.strengths }}</p>
+                                {% endif %}
+                                {% if review.feedback %}
+                                <p><strong>Feedback:</strong> {{ review.feedback }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Final 360 Evaluation Form -->
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5><i class="fas fa-clipboard-check"></i> Final 360-Degree Assessment</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> The final score will be automatically calculated based on the weighted
+                                    combination of all feedback sources. You can override this if needed, but the system
+                                    will suggest the calculated weighted score.
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.performance_score.id_for_label }}">
+                                                <i class="fas fa-calculator"></i> Final Performance Score (1-10)
+                                            </label>
+                                            {{ form.performance_score }}
+                                            <small class="form-text text-muted">
+                                                System will calculate this based on weighted inputs, but you can adjust if needed
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Evaluation Type</label>
+                                            <input type="text" class="form-control" value="360-Degree Evaluation" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.strengths.id_for_label }}">
+                                        <i class="fas fa-plus-circle"></i> Consolidated Strengths
+                                    </label>
+                                    {{ form.strengths }}
+                                    <small class="form-text text-muted">
+                                        Summarize the key strengths identified across all feedback sources
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.areas_for_improvement.id_for_label }}">
+                                        <i class="fas fa-chart-line"></i> Key Development Areas
+                                    </label>
+                                    {{ form.areas_for_improvement }}
+                                    <small class="form-text text-muted">
+                                        Identify the most important areas for improvement based on all feedback
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.goals_achieved.id_for_label }}">
+                                        <i class="fas fa-trophy"></i> Overall Achievements
+                                    </label>
+                                    {{ form.goals_achieved }}
+                                    <small class="form-text text-muted">
+                                        Summarize the employee's key accomplishments this period
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.development_needs.id_for_label }}">
+                                        <i class="fas fa-graduation-cap"></i> Development Plan
+                                    </label>
+                                    {{ form.development_needs }}
+                                    <small class="form-text text-muted">
+                                        Outline specific development needs and recommended actions
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="{{ form.remarks.id_for_label }}">
+                                        <i class="fas fa-comment"></i> Final Assessment Comments
+                                    </label>
+                                    {{ form.remarks }}
+                                    <small class="form-text text-muted">
+                                        Provide your overall assessment and recommendations
+                                    </small>
+                                </div>
+
+                                <!-- Hidden fields -->
+                                {{ form.employee }}
+                                {{ form.evaluator }}
+                                {{ form.evaluation_type }}
+
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-check-circle"></i> Complete 360-Degree Evaluation
+                                    </button>
+                                    <a href="{% url 'evaluation_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Calculate suggested score based on weights
+    function calculateSuggestedScore() {
+        var selfScore = {{ self_evaluation.performance_score|default:0 }};
+        var managerScore = {{ manager_evaluation.performance_score|default:0 }};
+        var peerScore = 0;
+
+        {% if peer_reviews %}
+            {% for review in peer_reviews %}
+                peerScore += {{ review.overall_rating }};
+            {% endfor %}
+            peerScore = peerScore / {{ peer_reviews|length }};
+        {% endif %}
+
+        var selfWeight = {{ weights.self }} / 100;
+        var managerWeight = {{ weights.manager }} / 100;
+        var peerWeight = {{ weights.peer }} / 100;
+
+        var suggestedScore = 0;
+        var totalWeight = 0;
+
+        if (selfScore > 0) {
+            suggestedScore += selfScore * selfWeight;
+            totalWeight += selfWeight;
+        }
+        if (managerScore > 0) {
+            suggestedScore += managerScore * managerWeight;
+            totalWeight += managerWeight;
+        }
+        if (peerScore > 0) {
+            suggestedScore += peerScore * peerWeight;
+            totalWeight += peerWeight;
+        }
+
+        if (totalWeight > 0) {
+            suggestedScore = suggestedScore / totalWeight;
+            $('#{{ form.performance_score.id_for_label }}').val(Math.round(suggestedScore));
+        }
+    }
+
+    // Calculate on page load
+    calculateSuggestedScore();
+
+    // Add validation
+    $('form').on('submit', function(e) {
+        var score = $('#{{ form.performance_score.id_for_label }}').val();
+        if (score < 1 || score > 10) {
+            alert('Performance score must be between 1 and 10');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
