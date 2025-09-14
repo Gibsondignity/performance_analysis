@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Evaluation Criteria Management{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-blue-600">Evaluation Criteria</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Evaluation Criteria Management</h1>
+            <p class="text-purple-100 text-lg">Define and manage evaluation criteria for different roles</p>
+        </div>
+        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold">{{ criteria|length }}</div>
+                <p class="text-sm text-purple-200">Total Criteria</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Active Criteria</p>
+                <p class="text-3xl font-bold text-green-600">{{ criteria|length }}</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-lg">
+                <i class="fas fa-check-circle text-2xl text-green-600"></i>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <span class="text-sm text-green-600 font-medium">All criteria active</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Roles Covered</p>
+                <p class="text-3xl font-bold text-blue-600">{{ roles|length }}</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-lg">
+                <i class="fas fa-users text-2xl text-blue-600"></i>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <span class="text-sm text-blue-600 font-medium">All roles configured</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Weight</p>
+                <p class="text-3xl font-bold text-purple-600">100%</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-lg">
+                <i class="fas fa-balance-scale text-2xl text-purple-600"></i>
+            </div>
+        </div>
+        <div class="flex items-center">
+            <span class="text-sm text-purple-600 font-medium">Balanced scoring</span>
+        </div>
+    </div>
+</div>
+
+<!-- Filters Section -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Filter Criteria</h3>
+            <p class="text-gray-600">Find and manage evaluation criteria by role</p>
+        </div>
+        <div class="mt-4 lg:mt-0">
+            <a href="{% url 'add_evaluation_criteria' %}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg">
+                <i class="fas fa-plus mr-2"></i>
+                Add New Criteria
+            </a>
+        </div>
+    </div>
+
+    <form method="get" class="flex flex-wrap gap-4" id="filterForm">
+        <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-user-tag mr-2 text-purple-500"></i>Filter by Role
+            </label>
+            <select name="role" id="role"
+                    class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                <option value="">All Roles</option>
+                {% for role_choice in roles %}
+                <option value="{{ role_choice.0 }}" {% if selected_role == role_choice.0 %}selected{% endif %}>
+                    {{ role_choice.1 }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-search mr-2 text-blue-500"></i>Search Criteria
+            </label>
+            <input type="text" name="search" id="search" placeholder="Search by name or description"
+                   class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+        </div>
+
+        <div class="flex items-end">
+            <button type="submit" class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg">
+                <i class="fas fa-filter mr-2"></i>
+                Apply Filters
+            </button>
+        </div>
+
+        {% if selected_role %}
+        <div class="flex items-end">
+            <a href="{% url 'evaluation_criteria_list' %}" class="inline-flex items-center px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+                <i class="fas fa-times mr-2"></i>
+                Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Criteria Table -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-900">Evaluation Criteria List</h3>
+        <p class="text-gray-600 mt-1">Manage criteria for performance evaluations</p>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" id="criteriaTable">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-user-tag mr-2"></i>Role
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-tag mr-2"></i>Criteria Name
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-info-circle mr-2"></i>Description
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-balance-scale mr-2"></i>Weight (%)
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-toggle-on mr-2"></i>Status
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <i class="fas fa-cogs mr-2"></i>Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for criteria in criteria %}
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-user-tag text-purple-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ criteria.get_role_display }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ criteria.criteria_name }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 max-w-xs truncate" title="{{ criteria.description }}">
+                            {{ criteria.description|truncatechars:60 }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 px-3 py-1 rounded-full">
+                                <span class="text-sm font-semibold text-blue-800">{{ criteria.weight }}%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if criteria.is_active %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <i class="fas fa-pause-circle mr-1"></i>
+                            Inactive
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-xs font-medium rounded-lg transition-colors duration-200">
+                                <i class="fas fa-edit mr-1"></i>
+                                Edit
+                            </button>
+                            <button class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-medium rounded-lg transition-colors duration-200">
+                                <i class="fas fa-trash mr-1"></i>
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="bg-gray-100 p-4 rounded-full mb-4">
+                                <i class="fas fa-inbox text-3xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No evaluation criteria found</h3>
+                            <p class="text-gray-600 mb-4">Get started by adding your first evaluation criteria.</p>
+                            <a href="{% url 'add_evaluation_criteria' %}" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add First Criteria
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-wrap gap-4 mt-8">
+    <a href="{% url 'dashboard' %}" class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Dashboard
+    </a>
+    <a href="{% url 'kpi_list' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-200">
+        <i class="fas fa-chart-line mr-2"></i>
+        Manage KPIs
+    </a>
+    <a href="{% url 'evaluation_list' %}" class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition duration-200">
+        <i class="fas fa-clipboard-list mr-2"></i>
+        View Evaluations
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Real-time search functionality
+    $('#search').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        const selectedRole = $('#role').val();
+
+        $('#criteriaTable tbody tr').each(function() {
+            const row = $(this);
+            const roleText = row.find('td:nth-child(1)').text().toLowerCase();
+            const nameText = row.find('td:nth-child(2)').text().toLowerCase();
+            const descText = row.find('td:nth-child(3)').text().toLowerCase();
+
+            const matchesSearch = !searchTerm ||
+                nameText.includes(searchTerm) ||
+                descText.includes(searchTerm);
+
+            const matchesRole = !selectedRole || roleText.includes(selectedRole.toLowerCase());
+
+            if (matchesSearch && matchesRole) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    });
+
+    // Role filter functionality
+    $('#role').on('change', function() {
+        const selectedRole = $(this).val();
+        const searchTerm = $('#search').val().toLowerCase();
+
+        $('#criteriaTable tbody tr').each(function() {
+            const row = $(this);
+            const roleText = row.find('td:nth-child(1)').text().toLowerCase();
+            const nameText = row.find('td:nth-child(2)').text().toLowerCase();
+            const descText = row.find('td:nth-child(3)').text().toLowerCase();
+
+            const matchesSearch = !searchTerm ||
+                nameText.includes(searchTerm) ||
+                descText.includes(searchTerm);
+
+            const matchesRole = !selectedRole || roleText.includes(selectedRole.toLowerCase());
+
+            if (matchesSearch && matchesRole) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    });
+
+    // Add hover effects to table rows
+    $('#criteriaTable tbody tr').hover(
+        function() {
+            $(this).addClass('bg-blue-50');
+        },
+        function() {
+            $(this).removeClass('bg-blue-50');
+        }
+    );
+
+    // Add click effects to action buttons
+    $('.bg-yellow-100, .bg-red-100').hover(
+        function() {
+            $(this).addClass('transform scale-105');
+        },
+        function() {
+            $(this).removeClass('transform scale-105');
+        }
+    );
+
+    // Auto-submit form on role change for better UX
+    $('#role').on('change', function() {
+        $('#filterForm').submit();
+    });
+
+    // Add loading state to filter button
+    $('#filterForm').on('submit', function() {
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Filtering...');
+
+        // Re-enable after a short delay (in case of client-side filtering)
+        setTimeout(function() {
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-filter mr-2"></i>Apply Filters');
+        }, 500);
+    });
+});
+</script>
+{% endblock %}
