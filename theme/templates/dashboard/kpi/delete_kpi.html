@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete KPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Delete KPI</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'kpi_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to KPI List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5><i class="icon fas fa-exclamation-triangle"></i> Warning!</h5>
+                        Are you sure you want to delete the KPI "<strong>{{ kpi.name }}</strong>" for role "<strong>{{ kpi.get_role_display }}</strong>"?
+                        <br><br>
+                        This action cannot be undone and may affect existing performance records that use this KPI.
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">KPI Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Role:</dt>
+                                <dd class="col-sm-8">{{ kpi.get_role_display }}</dd>
+
+                                <dt class="col-sm-4">Name:</dt>
+                                <dd class="col-sm-8">{{ kpi.name }}</dd>
+
+                                <dt class="col-sm-4">Type:</dt>
+                                <dd class="col-sm-8">{{ kpi.get_kpi_type_display }}</dd>
+
+                                <dt class="col-sm-4">Weight:</dt>
+                                <dd class="col-sm-8">{{ kpi.weight }}%</dd>
+
+                                <dt class="col-sm-4">Status:</dt>
+                                <dd class="col-sm-8">
+                                    {% if kpi.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group mt-3">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Yes, Delete KPI
+                            </button>
+                            <a href="{% url 'kpi_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
