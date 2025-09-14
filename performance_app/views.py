@@ -2490,7 +2490,7 @@ def add_training(request):
             messages.error(request, f'❌ Error adding training: {str(e)}')
 
     employees = EmployeeProfile.objects.all()
-    return render(request, 'dashboard/training/add_training.html', {'employees': employees})
+    return render(request, 'training/add_training.html', {'employees': employees})
 
 
 @login_required
