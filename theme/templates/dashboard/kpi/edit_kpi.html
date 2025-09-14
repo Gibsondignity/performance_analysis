@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit KPI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Edit KPI</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'kpi_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to KPI List
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="id_role">Role</label>
+                            <select name="role" id="id_role" class="form-control" required>
+                                {% for role_choice in roles %}
+                                <option value="{{ role_choice.0 }}" {% if kpi.role == role_choice.0 %}selected{% endif %}>
+                                    {{ role_choice.1 }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_name">KPI Name</label>
+                            <input type="text" name="name" id="id_name" class="form-control" required
+                                   value="{{ kpi.name }}" placeholder="e.g., Sales Revenue, Customer Satisfaction">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            <textarea name="description" id="id_description" class="form-control" rows="3"
+                                      placeholder="Describe what this KPI measures">{{ kpi.description }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_kpi_type">KPI Type</label>
+                            <select name="kpi_type" id="id_kpi_type" class="form-control" required>
+                                <option value="QUANTITATIVE" {% if kpi.kpi_type == 'QUANTITATIVE' %}selected{% endif %}>Quantitative</option>
+                                <option value="QUALITATIVE" {% if kpi.kpi_type == 'QUALITATIVE' %}selected{% endif %}>Qualitative</option>
+                                <option value="BOOLEAN" {% if kpi.kpi_type == 'BOOLEAN' %}selected{% endif %}>Boolean</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_unit">Unit</label>
+                            <input type="text" name="unit" id="id_unit" class="form-control"
+                                   value="{{ kpi.unit }}" placeholder="e.g., USD, %, hours, customers">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_target_direction">Target Direction</label>
+                            <select name="target_direction" id="id_target_direction" class="form-control" required>
+                                <option value="HIGHER" {% if kpi.target_direction == 'HIGHER' %}selected{% endif %}>Higher is Better</option>
+                                <option value="LOWER" {% if kpi.target_direction == 'LOWER' %}selected{% endif %}>Lower is Better</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_weight">Weight (%)</label>
+                            <input type="number" name="weight" id="id_weight" class="form-control" required
+                                   min="0" max="100" step="0.1" value="{{ kpi.weight }}" placeholder="e.g., 25.0">
+                            <small class="form-text text-muted">Percentage weight for this KPI in overall scoring</small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="id_is_active" name="is_active"
+                                       {% if kpi.is_active %}checked{% endif %}>
+                                <label class="custom-control-label" for="id_is_active">Active</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update KPI
+                            </button>
+                            <a href="{% url 'kpi_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add form validation or dynamic behavior here
+});
+</script>
+{% endblock %}

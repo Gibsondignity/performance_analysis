@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manager Evaluation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user-tie"></i> Manager Evaluation for {{ employee.first_name }} {{ employee.last_name }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'evaluation_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Evaluations
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Manager Evaluation:</strong> As a manager, your evaluation carries significant weight
+                        in the employee's overall performance assessment. Provide constructive feedback that helps
+                        guide their professional development.
+                    </div>
+
+                    <!-- Employee Info Card -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Employee Information</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Name:</strong> {{ employee.first_name }} {{ employee.last_name }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Role:</strong> {{ employee.user.get_role_display }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Department:</strong> {{ employee.department }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.performance_score.id_for_label }}">
+                                        <i class="fas fa-star"></i> Overall Performance Score (1-10)
+                                    </label>
+                                    {{ form.performance_score }}
+                                    <small class="form-text text-muted">
+                                        Your assessment of the employee's overall performance (this carries 50% weight in 360° evaluation)
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Evaluation Type</label>
+                                    <input type="text" class="form-control" value="Manager Evaluation" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.strengths.id_for_label }}">
+                                <i class="fas fa-plus-circle"></i> Key Strengths
+                            </label>
+                            {{ form.strengths }}
+                            <small class="form-text text-muted">
+                                What are the employee's strongest contributions and positive attributes?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.areas_for_improvement.id_for_label }}">
+                                <i class="fas fa-chart-line"></i> Areas for Improvement
+                            </label>
+                            {{ form.areas_for_improvement }}
+                            <small class="form-text text-muted">
+                                What specific areas does the employee need to focus on for improvement?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.goals_achieved.id_for_label }}">
+                                <i class="fas fa-trophy"></i> Goals Achieved
+                            </label>
+                            {{ form.goals_achieved }}
+                            <small class="form-text text-muted">
+                                Which objectives or targets did the employee successfully meet?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.development_needs.id_for_label }}">
+                                <i class="fas fa-graduation-cap"></i> Development Recommendations
+                            </label>
+                            {{ form.development_needs }}
+                            <small class="form-text text-muted">
+                                What training, mentoring, or resources would help the employee grow?
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.remarks.id_for_label }}">
+                                <i class="fas fa-comment"></i> Manager Comments
+                            </label>
+                            {{ form.remarks }}
+                            <small class="form-text text-muted">
+                                Provide detailed feedback, including specific examples and actionable advice
+                            </small>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        {{ form.employee }}
+                        {{ form.evaluator }}
+                        {{ form.evaluation_type }}
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Submit Manager Evaluation
+                            </button>
+                            <a href="{% url 'evaluation_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add any client-side validation or enhancements here
+    $('form').on('submit', function(e) {
+        var score = $('#{{ form.performance_score.id_for_label }}').val();
+        if (score < 1 || score > 10) {
+            alert('Performance score must be between 1 and 10');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

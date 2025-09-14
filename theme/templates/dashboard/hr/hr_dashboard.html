@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}HR Executive Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">HR Executive View</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">HR Executive Dashboard</h1>
+                <p class="text-emerald-100 mt-1">Organization-wide performance insights and analytics</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <div class="text-3xl font-bold">{{ total_employees|default:0 }}</div>
+                <div class="text-sm text-emerald-100">Total Employees</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Organization Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ total_employees|default:0 }}</div>
+                    <div class="text-sm text-gray-600">Total Employees</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ avg_performance|default:"--" }}%</div>
+                    <div class="text-sm text-gray-600">Avg Performance</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-building text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ departments_count|default:5 }}</div>
+                    <div class="text-sm text-gray-600">Departments</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-orange-100 rounded-lg">
+                    <i class="fas fa-graduation-cap text-orange-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ active_trainings|default:0 }}</div>
+                    <div class="text-sm text-gray-600">Active Trainings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organization Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Department Performance Overview -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-building mr-2 text-blue-500"></i>Department Performance
+                </h3>
+                <div class="h-80">
+                    <canvas id="departmentChart"></canvas>
+                </div>
+                {% if not department_labels %}
+                <div class="text-center py-8">
+                    <i class="fas fa-chart-bar text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">No department performance data available</p>
+                </div>
+                {% endif %}
+            </div>
+
+        <!-- Organization Health Metrics -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-heartbeat mr-2 text-red-500"></i>Organization Health
+            </h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Employee Satisfaction</span>
+                    <span class="text-sm font-bold text-green-600">{{ organization_health.satisfaction }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full" style="width: {{ organization_health.satisfaction }}%"></div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Retention Rate</span>
+                    <span class="text-sm font-bold text-blue-600">{{ organization_health.retention }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ organization_health.retention }}%"></div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Engagement Score</span>
+                    <span class="text-sm font-bold text-purple-600">{{ organization_health.engagement }}/10</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-purple-600 h-2 rounded-full" style="width: {{ organization_health.engagement|mul:10 }}%"></div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Diversity Index</span>
+                    <span class="text-sm font-bold text-orange-600">{{ organization_health.diversity }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-orange-600 h-2 rounded-full" style="width: {{ organization_health.diversity }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Distribution & Trends -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Performance Distribution -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-pie mr-2 text-green-500"></i>Performance Distribution
+            </h3>
+            <div class="flex items-center justify-center mb-4">
+                <canvas id="performanceDistributionChart" width="250" height="250"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div>
+                    <div class="text-xl font-bold text-green-600">{{ performance_distribution.high_performers }}%</div>
+                    <div class="text-sm text-gray-600">High Performers</div>
+                </div>
+                <div>
+                    <div class="text-xl font-bold text-yellow-600">{{ performance_distribution.average }}%</div>
+                    <div class="text-sm text-gray-600">Average</div>
+                </div>
+                <div>
+                    <div class="text-xl font-bold text-red-600">{{ performance_distribution.needs_attention }}%</div>
+                    <div class="text-sm text-gray-600">Needs Attention</div>
+                </div>
+                <div>
+                    <div class="text-xl font-bold text-blue-600">{{ performance_distribution.top_talent }}%</div>
+                    <div class="text-sm text-gray-600">Top Talent</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organization Trends -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-area mr-2 text-indigo-500"></i>Organization Trends
+            </h3>
+            <div class="h-64">
+                <canvas id="orgTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- HR Actions & Reports -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Quick HR Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-bolt mr-2 text-yellow-500"></i>HR Actions
+            </h3>
+            <div class="space-y-3">
+                <a href="{% url 'employee_management' %}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group">
+                    <i class="fas fa-user-plus text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Manage Employees</p>
+                        <p class="text-sm text-gray-600">Add, edit, and view employee profiles</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'kpi_list' %}" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group">
+                    <i class="fas fa-bullseye text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Configure KPIs</p>
+                        <p class="text-sm text-gray-600">Set up role-based performance metrics</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'training_list' %}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group">
+                    <i class="fas fa-graduation-cap text-purple-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Training Programs</p>
+                        <p class="text-sm text-gray-600">Manage employee development</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'ai_demo_dashboard' %}" class="flex items-center p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors group">
+                    <i class="fas fa-robot text-indigo-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">AI Analytics Demo</p>
+                        <p class="text-sm text-gray-600">Showcase AI-powered insights</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Export & Reports -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-file-export mr-2 text-red-500"></i>Reports & Exports
+            </h3>
+            <div class="space-y-3">
+                <button onclick="exportReport('pdf')" class="w-full flex items-center p-4 bg-red-50 hover:bg-red-100 rounded-lg transition-colors group">
+                    <i class="fas fa-file-pdf text-red-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Export PDF Report</p>
+                        <p class="text-sm text-gray-600">Comprehensive performance report</p>
+                    </div>
+                </button>
+
+                <button onclick="exportReport('excel')" class="w-full flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group">
+                    <i class="fas fa-file-excel text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Export Excel Data</p>
+                        <p class="text-sm text-gray-600">Raw data for analysis</p>
+                    </div>
+                </button>
+
+                <button onclick="exportReport('csv')" class="w-full flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group">
+                    <i class="fas fa-file-csv text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Export CSV</p>
+                        <p class="text-sm text-gray-600">Simple data export</p>
+                    </div>
+                </button>
+
+                <button onclick="generateAnalytics()" class="w-full flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group">
+                    <i class="fas fa-chart-bar text-purple-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                    <div>
+                        <p class="font-semibold text-gray-900">Generate Analytics</p>
+                        <p class="text-sm text-gray-600">AI-powered organization insights</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Talent & Development Focus -->
+    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-star mr-2 text-indigo-600"></i>Top Talent & Development Focus
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h4 class="font-semibold text-gray-900 mb-3">High Performers</h4>
+                <div class="space-y-2">
+                    {% for performer in top_performers %}
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-green-200">
+                        <span class="text-sm text-gray-700">{{ performer.name }} - {{ performer.department }}</span>
+                        <span class="text-sm font-bold text-green-600">{{ performer.score }}%</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <span class="text-sm text-gray-500">No performance data available</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <h4 class="font-semibold text-gray-900 mb-3">Development Opportunities</h4>
+                <div class="space-y-2">
+                    {% for need in development_needs %}
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-orange-200">
+                        <span class="text-sm text-gray-700">{{ need.type }}</span>
+                        <span class="text-sm font-bold text-orange-600">{{ need.count }} needed</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <span class="text-sm text-gray-500">No development data available</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Department Performance Chart
+    const deptCtx = document.getElementById('departmentChart').getContext('2d');
+    const departmentLabels = {{ department_labels|safe }};
+    const departmentScores = {{ department_scores|safe }};
+
+    new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+            labels: departmentLabels.length > 0 ? departmentLabels : ['No Data'],
+            datasets: [{
+                label: 'Avg Performance %',
+                data: departmentScores.length > 0 ? departmentScores : [0],
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderColor: 'rgba(16, 185, 129, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Performance Distribution Chart
+    const perfDistCtx = document.getElementById('performanceDistributionChart').getContext('2d');
+    const performanceDist = {{ performance_distribution|safe }};
+
+    new Chart(perfDistCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['High Performers', 'Average', 'Needs Attention', 'Top Talent'],
+            datasets: [{
+                data: [
+                    performanceDist.high_performers || 0,
+                    performanceDist.average || 0,
+                    performanceDist.needs_attention || 0,
+                    performanceDist.top_talent || 0
+                ],
+                backgroundColor: [
+                    '#10B981', // green
+                    '#F59E0B', // yellow
+                    '#EF4444', // red
+                    '#3B82F6'  // blue
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Organization Trend Chart
+    const orgTrendCtx = document.getElementById('orgTrendChart').getContext('2d');
+    const trendLabels = {{ trend_labels|safe }};
+    const trendScores = {{ trend_scores|safe }};
+
+    new Chart(orgTrendCtx, {
+        type: 'line',
+        data: {
+            labels: trendLabels.length > 0 ? trendLabels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Organization Performance',
+                data: trendScores.length > 0 ? trendScores : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                borderColor: 'rgba(99, 102, 241, 1)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Export functions
+function exportReport(type) {
+    const url = `/reports/organization/?type=${type}`;
+    window.open(url, '_blank');
+}
+
+function generateAnalytics() {
+    // Trigger AI analytics generation
+    alert('Generating AI-powered organization analytics...');
+    // In a real implementation, this would call an API endpoint
+}
+</script>
+{% endblock %}
+{% endblock %}

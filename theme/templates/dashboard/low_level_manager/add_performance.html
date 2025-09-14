@@ -1,109 +1,390 @@
 {% extends 'base.html' %}
-{% block title %}Add Performance Record{% endblock %}
+{% load static %}
+
+{% block title %}AI Performance Portal - Add Performance Record{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-blue-600">Performance Management</span>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-purple-600">Add Record</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="container mx-auto py-10 px-6 py-8 bg-white shadow-xl rounded-xl animate__animated animate__fadeIn">
-    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Add New Performance Record</h2>
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Add Performance Record</h1>
+            <p class="text-blue-100 text-lg">Record employee performance metrics with AI-powered analysis</p>
+        </div>
+        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold">AI</div>
+                <p class="text-sm text-blue-200">Auto-Analysis</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- AI Insights Banner -->
+<div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 shadow-lg border border-blue-200 mb-8">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <div class="bg-blue-100 p-3 rounded-xl mr-4">
+                <i class="fas fa-brain text-2xl text-blue-600"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">AI-Powered Performance Analysis</h3>
+                <p class="text-gray-600">This record will be automatically analyzed by our AI system for insights and recommendations</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <i class="fas fa-robot mr-2"></i>
+                Auto-Evaluation
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Form Container -->
+<div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
     <!-- Error Display -->
     {% if form.errors %}
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-inner">
-            <p class="font-bold">There were errors in your submission:</p>
-            {{ form.non_field_errors }}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                <div>
+                    <h4 class="text-red-800 font-semibold">Please correct the following errors:</h4>
+                    {% for field in form %}
+                        {% if field.errors %}
+                            <ul class="text-red-700 mt-2 list-disc list-inside">
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                        <ul class="text-red-700 mt-2 list-disc list-inside">
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     {% endif %}
 
-    <form method="post" class="space-y-6" action="{% url 'add_performance_record' %}">
+    <form method="post" action="{% url 'add_performance_record' %}">
         {% csrf_token %}
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Employee Selection Section -->
+        <div class="mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-user text-blue-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900">Employee Selection</h3>
+                    <p class="text-gray-600">Select the employee for this performance record</p>
+                </div>
+            </div>
 
-            <!-- Employee -->
-            <div>
-                <label class="text-gray-700 font-medium">Employee</label>
+            <div class="max-w-md">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-user-check mr-2 text-blue-500"></i>Select Employee
+                </label>
                 {{ form.employee }}
-            </div>
-
-            <!-- Sales Target -->
-            <div>
-                <label class="text-gray-700 font-medium">Sales Target</label>
-                {{ form.sales_target }}
-            </div>
-
-            <!-- Sales Volume -->
-            <div>
-                <label class="text-gray-700 font-medium">Sales Volume</label>
-                {{ form.sales_volume }}
-            </div>
-
-            <!-- Distribution Target -->
-            <div>
-                <label class="text-gray-700 font-medium">Distribution Target</label>
-                {{ form.distribution_target }}
-            </div>
-
-            <!-- Distribution Volume -->
-            <div>
-                <label class="text-gray-700 font-medium">Distribution Volume</label>
-                {{ form.distribution_volume }}
-            </div>
-
-            <!-- Revenue Target -->
-            <div>
-                <label class="text-gray-700 font-medium">Revenue Target</label>
-                {{ form.revenue_target }}
-            </div>
-
-            <!-- Revenue Volume -->
-            <div>
-                <label class="text-gray-700 font-medium">Revenue Volume</label>
-                {{ form.revenue_volume }}
-            </div>
-
-            <!-- Customer Base Target -->
-            <div>
-                <label class="text-gray-700 font-medium">Customer Base Target</label>
-                {{ form.customer_base_target }}
-            </div>
-
-            <!-- Customer Base Volume -->
-            <div>
-                <label class="text-gray-700 font-medium">Customer Base Volume</label>
-                {{ form.customer_base_volume }}
-            </div>
-
-            
-            <div>
-                <label class="text-gray-700 font-medium">Team Engagement Score (0–10)</label>
-                {{ form.team_engagement_score }}
-            </div>
-
-            <div>
-                <label class="text-gray-700 font-medium">Performance Start Date</label>
-                {{ form.performance_start_date }}
-            </div>
-
-            
-            <div>
-                <label class="text-gray-700 font-medium">Performance End Date</label>
-                {{ form.performance_end_date }}
+                {{ form.employee.errors }}
             </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="flex justify-end gap-5 my-8">
+        <!-- Performance Metrics Section -->
+        <div class="mb-8">
+            <div class="flex items-center mb-6">
+                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-chart-line text-green-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900">Performance Metrics</h3>
+                    <p class="text-gray-600">Enter the key performance indicators for this period</p>
+                </div>
+            </div>
+
+            <!-- Role-based KPIs -->
+            {% if role_kpis %}
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Role-Specific KPIs</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="kpi-fields">
+                    {% for kpi in role_kpis %}
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-target text-blue-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">{{ kpi.name }}</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Target {% if kpi.unit %}({{ kpi.unit }}){% endif %}
+                                </label>
+                                <input type="number" step="0.01" name="kpi_{{ kpi.id }}_target"
+                                       id="kpi_{{ kpi.id }}_target" class="form-control"
+                                       placeholder="Enter target value" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Actual {% if kpi.unit %}({{ kpi.id }}){% endif %}
+                                </label>
+                                <input type="number" step="0.01" name="kpi_{{ kpi.id }}_actual"
+                                       id="kpi_{{ kpi.id }}_actual" class="form-control"
+                                       placeholder="Enter actual value" required>
+                            </div>
+                            {% if kpi.description %}
+                            <div class="text-sm text-gray-600">
+                                <p>{{ kpi.description }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Legacy Fields (for backward compatibility) -->
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Legacy Performance Metrics</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Sales Metrics -->
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-dollar-sign text-blue-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Sales Performance</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sales Target</label>
+                                {{ form.sales_target }}
+                                {{ form.sales_target.errors }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sales Volume</label>
+                                {{ form.sales_volume }}
+                                {{ form.sales_volume.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distribution Metrics -->
+                    <div class="bg-purple-50 p-6 rounded-xl border border-purple-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-truck text-purple-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Distribution</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Distribution Target</label>
+                                {{ form.distribution_target }}
+                                {{ form.distribution_target.errors }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Distribution Volume</label>
+                                {{ form.distribution_volume }}
+                                {{ form.distribution_volume.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Metrics -->
+                    <div class="bg-green-50 p-6 rounded-xl border border-green-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-chart-bar text-green-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Revenue</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Revenue Target</label>
+                                {{ form.revenue_target }}
+                                {{ form.revenue_target.errors }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Revenue Volume</label>
+                                {{ form.revenue_volume }}
+                                {{ form.revenue_volume.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Base Metrics -->
+                    <div class="bg-orange-50 p-6 rounded-xl border border-orange-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-users text-orange-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Customer Base</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Customer Base Target</label>
+                                {{ form.customer_base_target }}
+                                {{ form.customer_base_target.errors }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Customer Base Volume</label>
+                                {{ form.customer_base_volume }}
+                                {{ form.customer_base_volume.errors }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Score -->
+                    <div class="bg-red-50 p-6 rounded-xl border border-red-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-heart text-red-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Team Engagement</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Engagement Score (0-10)</label>
+                                {{ form.team_engagement_score }}
+                                {{ form.team_engagement_score.errors }}
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>Rate the employee's team collaboration and engagement level</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-200">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-calendar-alt text-indigo-600 mr-2 text-xl"></i>
+                            <span class="font-semibold text-gray-900">Performance Period</span>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                {{ form.performance_start_date }}
+                                {{ form.performance_start_date.errors }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                                {{ form.performance_end_date }}
+                                {{ form.performance_end_date.errors }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Analysis Preview -->
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8 border border-indigo-200">
+            <div class="flex items-start">
+                <div class="bg-indigo-100 p-3 rounded-lg mr-4 mt-1">
+                    <i class="fas fa-magic text-indigo-600"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">AI Analysis Preview</h4>
+                    <p class="text-gray-700 mb-3">Once submitted, this performance record will be automatically analyzed by our AI system to generate:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Performance score calculation</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Automated evaluation</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Trend analysis</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Personalized recommendations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-100">
             <a href="{% url 'performance_record_list' %}"
-               class="group relative inline-flex items-center px-6 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 border border-gray-300 shadow hover:bg-gray-200 hover:shadow-md focus:outline-none transition-all duration-300 ease-in-out">
+               class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+                <i class="fas fa-times mr-2"></i>
                 Cancel
             </a>
+
             <button type="submit"
-                    class="group relative inline-flex items-center px-6 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none transition-all duration-300 ease-in-out">
-                <svg class="w-4 h-4 mr-2 fill-current group-hover:scale-110 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M17 3H3a2 2 0 00-2 2v10a2 2 0 002 2h4l1.293 1.293a1 1 0 001.414 0L11 17h6a2 2 0 002-2V5a2 2 0 00-2-2zM9 9H7v2h2v2h2v-2h2V9h-2V7H9v2z"/>
-                </svg>
-                Save
+                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition duration-200 transform hover:scale-[1.02] hover:shadow-lg">
+                <i class="fas fa-save mr-2"></i>
+                Save Performance Record
             </button>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form enhancement and validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+
+    // Auto-calculate percentages and provide feedback
+    const salesTarget = document.querySelector('input[name="sales_target"]');
+    const salesVolume = document.querySelector('input[name="sales_volume"]');
+
+    function updateCalculations() {
+        if (salesTarget && salesVolume && salesTarget.value && salesVolume.value) {
+            const target = parseFloat(salesTarget.value);
+            const volume = parseFloat(salesVolume.value);
+            if (target > 0) {
+                const percentage = ((volume / target) * 100).toFixed(1);
+                console.log(`Sales Achievement: ${percentage}%`);
+            }
+        }
+    }
+
+    if (salesTarget && salesVolume) {
+        salesTarget.addEventListener('input', updateCalculations);
+        salesVolume.addEventListener('input', updateCalculations);
+    }
+
+    // Form submission feedback
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analyzing with AI...';
+        submitBtn.disabled = true;
+
+        // Re-enable after 10 seconds (in case of error)
+        setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 10000);
+    });
+});
+</script>
 {% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Recommendations Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-blue-600">AI Recommendations</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">AI Recommendations</h1>
+            <p class="text-orange-100 text-lg">Smart insights and personalized improvement suggestions</p>
+        </div>
+        <div class="text-right">
+            <div class="text-4xl font-bold mb-2">{{ recommendations|length }}</div>
+            <p class="text-orange-200">Active Recommendations</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Stats -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Filter Recommendations</h3>
+            <p class="text-gray-600">Customize your view of AI-generated recommendations</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="flex flex-wrap gap-4">
+        <div>
+            <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+            <select name="priority" id="priority" onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">All Priorities</option>
+                {% for priority in priorities %}
+                    <option value="{{ priority }}" {% if priority == selected_priority %}selected{% endif %}>{{ priority }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <select name="category" id="category" onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex items-end">
+            <a href="{% url 'ai_recommendations' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+                <i class="fas fa-times mr-2"></i>
+                Clear Filters
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Recommendations Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+    {% for recommendation in recommendations %}
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">{{ recommendation.title }}</h4>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if recommendation.priority == 'CRITICAL' %}bg-red-100 text-red-800
+                            {% elif recommendation.priority == 'HIGH' %}bg-orange-100 text-orange-800
+                            {% elif recommendation.priority == 'MEDIUM' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ recommendation.priority }}
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fas fa-tag mr-1"></i>
+                            {{ recommendation.category|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="bg-yellow-100 p-2 rounded-lg">
+                    <i class="fas fa-lightbulb text-xl text-yellow-600"></i>
+                </div>
+            </div>
+
+            <!-- Employee Info -->
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full mr-3"
+                         src="https://ui-avatars.com/api/?name={{ recommendation.employee.first_name }}&background=4f46e5&color=fff&size=32"
+                         alt="Employee">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ recommendation.employee.first_name }} {{ recommendation.employee.last_name }}</p>
+                        <p class="text-xs text-gray-600">{{ recommendation.employee.job_title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <p class="text-gray-700 mb-4">{{ recommendation.description }}</p>
+
+            <!-- Actionable Steps -->
+            {% if recommendation.actionable_steps %}
+                <div class="mb-4">
+                    <h5 class="text-sm font-semibold text-gray-900 mb-2">Action Steps:</h5>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        {% for step in recommendation.actionable_steps %}
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-0.5 mr-2"></i>
+                                {{ step }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div class="flex items-center text-xs text-gray-500">
+                    <i class="fas fa-calendar mr-1"></i>
+                    {{ recommendation.created_at|date:"M d, Y" }}
+                </div>
+                <div class="flex items-center space-x-2">
+                    {% if not recommendation.is_implemented %}
+                        <button class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-800 text-xs font-medium rounded-lg transition duration-200">
+                            <i class="fas fa-check mr-1"></i>
+                            Mark Complete
+                        </button>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-lg">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Completed
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-span-full">
+            <div class="bg-white rounded-2xl p-12 shadow-lg border border-gray-100 text-center">
+                <i class="fas fa-lightbulb text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No Recommendations Found</h3>
+                <p class="text-gray-600 mb-6">There are currently no AI-generated recommendations matching your criteria.</p>
+                <a href="{% url 'ai_recommendations' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-200">
+                    <i class="fas fa-refresh mr-2"></i>
+                    Refresh Recommendations
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Summary Statistics -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+    <h3 class="text-xl font-semibold text-gray-900 mb-6">Recommendations Summary</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center">
+            <div class="text-3xl font-bold text-red-600 mb-2">{{ recommendations|length }}</div>
+            <p class="text-sm text-gray-600">Total Recommendations</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-orange-600 mb-2">{{ recommendations|length|add:-1 }}</div>
+            <p class="text-sm text-gray-600">High Priority</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-blue-600 mb-2">{{ recommendations|length }}</div>
+            <p class="text-sm text-gray-600">Active Items</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-green-600 mb-2">0</div>
+            <p class="text-sm text-gray-600">Completed</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

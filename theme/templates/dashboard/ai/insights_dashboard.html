@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Insights Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-blue-600">AI Insights</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">AI Insights</h1>
+            <p class="text-pink-100 text-lg">Deep analysis and intelligent insights from your performance data</p>
+        </div>
+        <div class="text-right">
+            <div class="text-4xl font-bold mb-2">{{ insights|length }}</div>
+            <p class="text-pink-200">AI Insights Generated</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Filter Insights</h3>
+            <p class="text-gray-600">View insights by type and category</p>
+        </div>
+    </div>
+
+    <form method="get" class="flex flex-wrap gap-4">
+        <div>
+            <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Insight Type</label>
+            <select name="type" id="type" onchange="this.form.submit()"
+                    class="border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <option value="">All Types</option>
+                {% for insight_type in insight_types %}
+                    <option value="{{ insight_type }}" {% if insight_type == selected_type %}selected{% endif %}>{{ insight_type|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex items-end">
+            <a href="{% url 'ai_insights' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+                <i class="fas fa-times mr-2"></i>
+                Clear Filters
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Insights Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    {% for insight in insights %}
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">{{ insight.title }}</h4>
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if insight.insight_type == 'TREND' %}bg-blue-100 text-blue-800
+                            {% elif insight.insight_type == 'COMPARISON' %}bg-green-100 text-green-800
+                            {% elif insight.insight_type == 'FORECAST' %}bg-purple-100 text-purple-800
+                            {% else %}bg-orange-100 text-orange-800{% endif %}">
+                            {% if insight.insight_type == 'TREND' %}
+                                <i class="fas fa-chart-line mr-1"></i>
+                            {% elif insight.insight_type == 'COMPARISON' %}
+                                <i class="fas fa-balance-scale mr-1"></i>
+                            {% elif insight.insight_type == 'FORECAST' %}
+                                <i class="fas fa-crystal-ball mr-1"></i>
+                            {% else %}
+                                <i class="fas fa-users mr-1"></i>
+                            {% endif %}
+                            {{ insight.insight_type|title }}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            <i class="fas fa-calendar mr-1"></i>
+                            {{ insight.created_at|date:"M d, Y" }}
+                        </span>
+                    </div>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-lg">
+                    <i class="fas fa-eye text-2xl text-purple-600"></i>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <p class="text-gray-700 mb-4">{{ insight.content }}</p>
+
+            <!-- Key Findings -->
+            {% if insight.key_findings %}
+                <div class="mb-4">
+                    <h5 class="text-sm font-semibold text-gray-900 mb-2">Key Findings:</h5>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        {% for finding in insight.key_findings %}
+                            <li class="flex items-start">
+                                <i class="fas fa-dot-circle text-purple-500 mt-0.5 mr-2"></i>
+                                {{ finding }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <!-- Affected Employees -->
+            {% if insight.affected_employees %}
+                <div class="mb-4">
+                    <h5 class="text-sm font-semibold text-gray-900 mb-2">Affected Employees:</h5>
+                    <div class="flex flex-wrap gap-2">
+                        {% for employee in insight.affected_employees %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ employee.first_name }} {{ employee.last_name }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div class="flex items-center text-xs text-gray-500">
+                    <i class="fas fa-user mr-1"></i>
+                    Generated by {{ insight.generated_by.get_full_name|default:"AI System" }}
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button class="inline-flex items-center px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-800 text-xs font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-share mr-1"></i>
+                        Share
+                    </button>
+                    <button class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-medium rounded-lg transition duration-200">
+                        <i class="fas fa-download mr-1"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-span-full">
+            <div class="bg-white rounded-2xl p-12 shadow-lg border border-gray-100 text-center">
+                <i class="fas fa-brain text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No Insights Available</h3>
+                <p class="text-gray-600 mb-6">AI insights will be generated as more performance data becomes available.</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'dashboard' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-200">
+                        <i class="fas fa-tachometer-alt mr-2"></i>
+                        View Dashboard
+                    </a>
+                    <button onclick="generateInsights()" class="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-xl transition duration-200">
+                        <i class="fas fa-sync mr-2"></i>
+                        Generate Insights
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Insights Statistics -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+    <h3 class="text-xl font-semibold text-gray-900 mb-6">Insights Analytics</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center">
+            <div class="text-3xl font-bold text-purple-600 mb-2">{{ insights|length }}</div>
+            <p class="text-sm text-gray-600">Total Insights</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-blue-600 mb-2">{{ insights|length }}</div>
+            <p class="text-sm text-gray-600">Trend Analysis</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-green-600 mb-2">{{ insights|length }}</div>
+            <p class="text-sm text-gray-600">Comparisons</p>
+        </div>
+        <div class="text-center">
+            <div class="text-3xl font-bold text-orange-600 mb-2">{{ insights|length }}</div>
+            <p class="text-sm text-gray-600">Forecasts</p>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-8">
+        <h4 class="text-lg font-semibold text-gray-900 mb-4">Recent AI Activity</h4>
+        <div class="space-y-3">
+            <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                <i class="fas fa-chart-line text-blue-600 mr-3"></i>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Performance trends analyzed</p>
+                    <p class="text-xs text-gray-600">Generated 5 new trend insights</p>
+                </div>
+                <span class="ml-auto text-xs text-gray-500">2 hours ago</span>
+            </div>
+            <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                <i class="fas fa-users text-green-600 mr-3"></i>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Department comparison completed</p>
+                    <p class="text-xs text-gray-600">Analyzed performance across 3 departments</p>
+                </div>
+                <span class="ml-auto text-xs text-gray-500">4 hours ago</span>
+            </div>
+            <div class="flex items-center p-3 bg-purple-50 rounded-lg">
+                <i class="fas fa-crystal-ball text-purple-600 mr-3"></i>
+                <div>
+                    <p class="text-sm font-medium text-gray-900">Future performance forecast</p>
+                    <p class="text-xs text-gray-600">Predicted performance for next quarter</p>
+                </div>
+                <span class="ml-auto text-xs text-gray-500">6 hours ago</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function generateInsights() {
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+        button.disabled = true;
+
+        // Simulate API call
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+
+            // Show success message
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg shadow-lg z-50';
+            message.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Insights generation started! Check back in a few minutes.';
+            document.body.appendChild(message);
+
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }, 2000);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Training Management{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">Training Management</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Training Management</h1>
+            <p class="text-gray-600">Track employee training programs and skill development</p>
+        </div>
+        {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' %}
+        <a href="{% url 'add_training' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+            <i class="fas fa-plus mr-2"></i>Add Training
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {% if employees %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Employee</label>
+                <select name="employee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Employees</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.id }}" {% if selected_employee == employee.id|stringformat:'s' %}selected{% endif %}>
+                        {{ employee.first_name }} {{ employee.last_name }} ({{ employee.user.employee_id }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Status</option>
+                    <option value="PLANNED" {% if selected_status == 'PLANNED' %}selected{% endif %}>Planned</option>
+                    <option value="IN_PROGRESS" {% if selected_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                    <option value="COMPLETED" {% if selected_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="CANCELLED" {% if selected_status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Training Type</label>
+                <input type="text" name="training_type" value="{{ selected_type }}" placeholder="e.g., Technical, Soft Skills"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <div class="md:col-span-4 flex gap-2">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                    <i class="fas fa-search mr-2"></i>Filter
+                </button>
+                <a href="{% url 'training_list' %}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Training Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for training in trainings %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <!-- Training Header -->
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ training.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ training.employee.first_name }} {{ training.employee.last_name }}</p>
+                </div>
+                <div class="flex flex-col items-end space-y-2">
+                    <!-- Status Badge -->
+                    {% if training.status == 'COMPLETED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check mr-1"></i>Completed
+                        </span>
+                    {% elif training.status == 'IN_PROGRESS' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fas fa-play mr-1"></i>In Progress
+                        </span>
+                    {% elif training.status == 'PLANNED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-calendar mr-1"></i>Planned
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <i class="fas fa-times mr-1"></i>Cancelled
+                        </span>
+                    {% endif %}
+
+                    <!-- Type Badge -->
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <i class="fas fa-tag mr-1"></i>{{ training.training_type }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Training Description -->
+            {% if training.description %}
+            <p class="text-sm text-gray-600 mb-4 line-clamp-3">{{ training.description }}</p>
+            {% endif %}
+
+            <!-- Progress Bar -->
+            {% if training.status == 'IN_PROGRESS' or training.status == 'COMPLETED' %}
+            <div class="mb-4">
+                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Completion</span>
+                    <span>{{ training.completion_percentage }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full transition-all duration-300"
+                         style="width: {{ training.completion_percentage }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Training Details -->
+            <div class="space-y-2 text-sm text-gray-600">
+                {% if training.provider %}
+                <div class="flex items-center">
+                    <i class="fas fa-building w-4 mr-2 text-blue-500"></i>
+                    <span>{{ training.provider }}</span>
+                </div>
+                {% endif %}
+
+                {% if training.start_date %}
+                <div class="flex items-center">
+                    <i class="fas fa-calendar w-4 mr-2 text-green-500"></i>
+                    <span>{{ training.start_date|date:"M d, Y" }}
+                        {% if training.end_date %} - {{ training.end_date|date:"M d, Y" }}{% endif %}</span>
+                </div>
+                {% endif %}
+
+                {% if training.certification_earned %}
+                <div class="flex items-center">
+                    <i class="fas fa-certificate w-4 mr-2 text-yellow-500"></i>
+                    <span>{{ training.certification_earned }}</span>
+                </div>
+                {% endif %}
+
+                {% if training.cost %}
+                <div class="flex items-center">
+                    <i class="fas fa-dollar-sign w-4 mr-2 text-green-500"></i>
+                    <span>${{ training.cost }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Skills Gained -->
+            {% if training.skills_gained %}
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <p class="text-sm font-medium text-gray-700 mb-2">Skills Gained:</p>
+                <div class="flex flex-wrap gap-1">
+                    {% for skill in training.skills_gained %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ skill }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' or training.employee.user == user %}
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                {% if training.status != 'COMPLETED' and training.status != 'CANCELLED' %}
+                <form method="POST" action="{% url 'update_training_progress' training.id %}" class="space-y-3">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="completion_percentage" min="0" max="100"
+                               placeholder="Progress %" required
+                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" name="certification_earned" placeholder="Certification"
+                               class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <input type="text" name="skills_gained" placeholder="Skills gained (comma-separated)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="flex gap-2">
+                        <button type="submit" name="status" value="IN_PROGRESS"
+                                class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                            Update Progress
+                        </button>
+                        <button type="submit" name="status" value="COMPLETED"
+                                class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+                            Mark Complete
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-graduation-cap text-4xl text-gray-400 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No training records found</h3>
+                    <p class="text-gray-500 mb-4">Start building employee skills with training programs.</p>
+                    {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' %}
+                    <a href="{% url 'add_training' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Training
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+{% endblock %}

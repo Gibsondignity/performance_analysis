@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Evaluation Criteria{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <a href="{% url 'evaluation_criteria_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">
+                    Evaluation Criteria
+                </a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-purple-600">Edit Criteria</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">Edit Evaluation Criteria</h1>
+            <p class="text-purple-100 text-lg">Update criteria details and settings</p>
+        </div>
+        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold">{{ criteria.weight }}</div>
+                <p class="text-sm text-purple-200">Current Weight</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Form -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+                <h3 class="text-xl font-semibold text-gray-900">Criteria Information</h3>
+                <p class="text-gray-600 mt-1">Modify the evaluation criteria details</p>
+            </div>
+
+            <form method="post" class="p-6" id="criteriaForm">
+                {% csrf_token %}
+
+                <!-- Role Selection -->
+                <div class="mb-6">
+                    <label for="id_role" class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-user-tag mr-2 text-purple-500"></i>Target Role
+                    </label>
+                    <div class="relative">
+                        <select name="role" id="id_role" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all appearance-none bg-white" required>
+                            <option value="">Select a role for this criteria</option>
+                            {% for role_choice in roles %}
+                            <option value="{{ role_choice.0 }}" {% if criteria.role == role_choice.0 %}selected{% endif %}>{{ role_choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Criteria Name -->
+                <div class="mb-6">
+                    <label for="id_criteria_name" class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-tag mr-2 text-blue-500"></i>Criteria Name
+                    </label>
+                    <input type="text" name="criteria_name" id="id_criteria_name"
+                           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                           value="{{ criteria.criteria_name }}" required>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-6">
+                    <label for="id_description" class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-info-circle mr-2 text-green-500"></i>Description
+                    </label>
+                    <textarea name="description" id="id_description" rows="4"
+                              class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-vertical">{{ criteria.description }}</textarea>
+                </div>
+
+                <!-- Weight -->
+                <div class="mb-6">
+                    <label for="id_weight" class="block text-sm font-medium text-gray-700 mb-3">
+                        <i class="fas fa-balance-scale mr-2 text-red-500"></i>Weight (%)
+                    </label>
+                    <div class="relative">
+                        <input type="number" name="weight" id="id_weight"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all pr-12"
+                               min="0" max="100" step="0.1" value="{{ criteria.weight }}" required>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3">
+                            <span class="text-gray-500 text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Status -->
+                <div class="mb-8">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="id_is_active" name="is_active" class="hidden" {% if criteria.is_active %}checked{% endif %}>
+                        <label for="id_is_active" class="flex items-center cursor-pointer">
+                            <div class="relative">
+                                <div class="w-12 h-6 bg-gray-300 rounded-full shadow-inner transition-colors duration-200" id="toggle-bg"></div>
+                                <div class="absolute top-0 left-0 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-200" id="toggle-circle"></div>
+                            </div>
+                            <span class="ml-3 text-sm font-medium text-gray-700" id="toggle-text">Active Criteria</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                    <button type="submit" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg" id="submitBtn">
+                        <i class="fas fa-save mr-2"></i>
+                        Update Criteria
+                    </button>
+                    <a href="{% url 'evaluation_criteria_list' %}" class="flex-1 inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Criteria Info -->
+        <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200">
+            <div class="flex items-center mb-4">
+                <div class="bg-blue-100 p-3 rounded-xl mr-4">
+                    <i class="fas fa-info-circle text-2xl text-blue-600"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900">Criteria Info</h4>
+            </div>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Created:</span>
+                    <span class="text-sm font-medium text-gray-900">{{ criteria.data_created|date:"M d, Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Last Updated:</span>
+                    <span class="text-sm font-medium text-gray-900">{{ criteria.data_updated|date:"M d, Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">Status:</span>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if criteria.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if criteria.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weight Calculator -->
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <div class="flex items-center mb-4">
+                <div class="bg-green-100 p-3 rounded-xl mr-4">
+                    <i class="fas fa-calculator text-2xl text-green-600"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900">Weight Calculator</h4>
+            </div>
+            <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Current Weight:</span>
+                    <span class="font-medium text-gray-900" id="currentWeight">{{ criteria.weight }}%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600">Remaining:</span>
+                    <span class="font-medium text-gray-900" id="remainingWeight">{{ 100|add:criteria.weight|floatformat:0 }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-500 h-2 rounded-full transition-all duration-300" id="weightProgress" style="width: {{ criteria.weight }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="bg-red-50 rounded-2xl p-6 border border-red-200">
+            <div class="flex items-center mb-4">
+                <div class="bg-red-100 p-3 rounded-xl mr-4">
+                    <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900">Danger Zone</h4>
+            </div>
+            <p class="text-sm text-gray-700 mb-4">These actions cannot be undone.</p>
+            <button class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200">
+                <i class="fas fa-trash mr-2"></i>
+                Delete Criteria
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-wrap gap-4 mt-8">
+    <a href="{% url 'evaluation_criteria_list' %}" class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-xl transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Criteria List
+    </a>
+    <a href="{% url 'add_evaluation_criteria' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-200">
+        <i class="fas fa-plus mr-2"></i>
+        Add New Criteria
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Custom toggle switch functionality
+    const checkbox = $('#id_is_active');
+    const toggleBg = $('#toggle-bg');
+    const toggleCircle = $('#toggle-circle');
+    const toggleText = $('#toggle-text');
+
+    function updateToggle() {
+        if (checkbox.is(':checked')) {
+            toggleBg.removeClass('bg-gray-300').addClass('bg-green-500');
+            toggleCircle.removeClass('translate-x-0').addClass('translate-x-6');
+            toggleText.text('Active Criteria').removeClass('text-gray-700').addClass('text-green-700');
+        } else {
+            toggleBg.removeClass('bg-green-500').addClass('bg-gray-300');
+            toggleCircle.removeClass('translate-x-6').addClass('translate-x-0');
+            toggleText.text('Inactive Criteria').removeClass('text-green-700').addClass('text-gray-700');
+        }
+    }
+
+    $('#id_is_active').on('change', updateToggle);
+    updateToggle(); // Initialize
+
+    // Weight calculator functionality
+    function updateWeightCalculator() {
+        const currentWeight = parseFloat($('#id_weight').val()) || 0;
+        const remainingWeight = 100 - currentWeight;
+
+        $('#currentWeight').text(currentWeight + '%');
+        $('#remainingWeight').text(Math.max(0, remainingWeight) + '%');
+
+        const progressPercent = Math.min(100, (currentWeight / 100) * 100);
+        $('#weightProgress').css('width', progressPercent + '%');
+
+        // Color coding
+        if (remainingWeight < 0) {
+            $('#remainingWeight').removeClass('text-gray-900').addClass('text-red-600');
+            $('#weightProgress').removeClass('bg-green-500').addClass('bg-red-500');
+        } else {
+            $('#remainingWeight').removeClass('text-red-600').addClass('text-gray-900');
+            $('#weightProgress').removeClass('bg-red-500').addClass('bg-green-500');
+        }
+    }
+
+    $('#id_weight').on('input', updateWeightCalculator);
+    updateWeightCalculator(); // Initialize
+
+    // Form validation
+    $('#criteriaForm').on('submit', function(e) {
+        const role = $('#id_role').val();
+        const name = $('#id_criteria_name').val().trim();
+        const weight = parseFloat($('#id_weight').val());
+
+        if (!role) {
+            e.preventDefault();
+            alert('Please select a role for this criteria.');
+            $('#id_role').focus();
+            return false;
+        }
+
+        if (!name) {
+            e.preventDefault();
+            alert('Please enter a criteria name.');
+            $('#id_criteria_name').focus();
+            return false;
+        }
+
+        if (isNaN(weight) || weight < 0 || weight > 100) {
+            e.preventDefault();
+            alert('Please enter a valid weight between 0 and 100.');
+            $('#id_weight').focus();
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = $('#submitBtn');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Updating...');
+    });
+
+    // Auto-resize textarea
+    $('#id_description').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Add focus effects
+    $('input, select, textarea').on('focus', function() {
+        $(this).parent().find('label').addClass('text-blue-600');
+    }).on('blur', function() {
+        $(this).parent().find('label').removeClass('text-blue-600');
+    });
+});
+</script>
+{% endblock %}

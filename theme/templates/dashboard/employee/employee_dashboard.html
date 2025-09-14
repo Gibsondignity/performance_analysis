@@ -1,0 +1,521 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Performance Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">My Performance</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Welcome Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">Welcome back, {{ request.session.first_name|default:user.employee_id }}!</h1>
+                <p class="text-blue-100 mt-1">Here's your comprehensive performance overview</p>
+            </div>
+            <div class="hidden md:block">
+                <div class="text-right">
+                    <div class="text-3xl font-bold">
+                        {% if recent_performance %}
+                            {{ recent_performance.get_overall_kpi_score|floatformat:1 }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-blue-100">Overall Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg">
+                    <i class="fas fa-trophy text-green-600 text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-lg font-bold text-gray-900">
+                        {% if recent_performance %}
+                            {{ recent_performance.get_overall_kpi_score|floatformat:1 }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                    <div class="text-xs text-gray-600">Performance Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                    <i class="fas fa-calendar-check text-blue-600 text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-lg font-bold text-gray-900">{{ attendance_data.present }}</div>
+                    <div class="text-xs text-gray-600">Days Present</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-clock text-yellow-600 text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-lg font-bold text-gray-900">{{ attendance_data.late }}</div>
+                    <div class="text-xs text-gray-600">Late Arrivals</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-purple-100 rounded-lg">
+                    <i class="fas fa-tasks text-purple-600 text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-lg font-bold text-gray-900">{{ tasks_summary.completed }}</div>
+                    <div class="text-xs text-gray-600">Tasks Completed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-orange-100 rounded-lg">
+                    <i class="fas fa-graduation-cap text-orange-600 text-lg"></i>
+                </div>
+                <div class="ml-3">
+                    <div class="text-lg font-bold text-gray-900">{{ training_progress|length }}</div>
+                    <div class="text-xs text-gray-600">Active Trainings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Scores Section -->
+    {% if kpi_data %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-blue-500"></i>KPI Performance
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for kpi_name, data in kpi_data.items %}
+            <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-medium text-gray-700 capitalize">{{ kpi_name|replace:"_"," " }}</h3>
+                    <span class="text-sm font-bold text-blue-600">{{ data.percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+                         style="width: {{ data.percentage }}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-600">
+                    <span>{{ data.current|floatformat:0 }} / {{ data.target|floatformat:0 }}</span>
+                    <span class="{% if data.percentage >= 100 %}text-green-600{% elif data.percentage >= 80 %}text-blue-600{% else %}text-red-600{% endif %}">
+                        {% if data.percentage >= 100 %}Excellent{% elif data.percentage >= 80 %}Good{% else %}Needs Attention{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Attendance Overview -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-calendar-check mr-2 text-green-500"></i>Monthly Attendance
+            </h3>
+            <div class="flex items-center justify-center mb-4">
+                <canvas id="attendanceChart" width="200" height="200"></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold text-green-600">{{ attendance_data.present }}</div>
+                    <div class="text-sm text-gray-600">Present</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-red-600">{{ attendance_data.absent }}</div>
+                    <div class="text-sm text-gray-600">Absent</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-yellow-600">{{ attendance_data.late }}</div>
+                    <div class="text-sm text-gray-600">Late</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trend -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-area mr-2 text-purple-500"></i>Performance Trend
+            </h3>
+            <div class="h-64">
+                <canvas id="performanceTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback and Training Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Feedback -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-comments mr-2 text-indigo-500"></i>Recent Feedback
+            </h3>
+            <div class="space-y-4">
+                {% for feedback in feedback_data %}
+                <div class="border-l-4 {% if feedback.sentiment == 'positive' %}border-green-500{% elif feedback.sentiment == 'negative' %}border-red-500{% else %}border-gray-500{% endif %} pl-4 py-2">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-sm font-medium text-gray-900">{{ feedback.evaluator }}</span>
+                            <span class="text-xs text-gray-500 ml-2">({{ feedback.type }})</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-bold text-blue-600">{{ feedback.score }}/10</span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                {% if feedback.sentiment == 'positive' %}bg-green-100 text-green-800
+                                {% elif feedback.sentiment == 'negative' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                <i class="fas fa-{% if feedback.sentiment == 'positive' %}smile{% elif feedback.sentiment == 'negative' %}frown{% else %}meh{% endif %} mr-1"></i>
+                                {{ feedback.sentiment|title }}
+                            </span>
+                        </div>
+                    </div>
+                    {% if feedback.remarks %}
+                    <p class="text-sm text-gray-600">{{ feedback.remarks }}</p>
+                    {% endif %}
+                    <div class="text-xs text-gray-500 mt-1">{{ feedback.date|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">No feedback received yet</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Training Progress -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-graduation-cap mr-2 text-teal-500"></i>Training Progress
+            </h3>
+            <div class="space-y-4">
+                {% for training in training_progress %}
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <h4 class="text-sm font-medium text-gray-900">{{ training.title }}</h4>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            {% if training.status == 'COMPLETED' %}bg-green-100 text-green-800
+                            {% elif training.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ training.status|title }}
+                        </span>
+                    </div>
+                    {% if training.status != 'COMPLETED' %}
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Progress</span>
+                            <span>{{ training.progress }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-teal-600 h-2 rounded-full transition-all duration-500"
+                                 style="width: {{ training.progress }}%"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if training.provider %}
+                    <div class="text-xs text-gray-500 mb-1">
+                        <i class="fas fa-building mr-1"></i>{{ training.provider }}
+                    </div>
+                    {% endif %}
+                    {% if training.skills %}
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        {% for skill in training.skills %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                            {{ skill }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-book text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">No training programs assigned</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals Summary -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-tasks mr-2 text-orange-500"></i>Goals & Tasks Summary
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ tasks_summary.total }}</div>
+                <div class="text-sm text-gray-600">Total Tasks</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">{{ tasks_summary.completed }}</div>
+                <div class="text-sm text-gray-600">Completed</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-blue-600">{{ tasks_summary.in_progress }}</div>
+                <div class="text-sm text-gray-600">In Progress</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-red-600">{{ tasks_summary.overdue }}</div>
+                <div class="text-sm text-gray-600">Overdue</div>
+            </div>
+        </div>
+        <div class="mt-6">
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="bg-gradient-to-r from-green-500 to-blue-500 h-4 rounded-full transition-all duration-500"
+                      style="width: {% if tasks_summary.total > 0 %}{{ tasks_summary.completed|mul:100|div:tasks_summary.total }}{% else %}0{% endif %}%"></div>
+            </div>
+            <div class="flex justify-between text-sm text-gray-600 mt-2">
+                <span>Task Completion Rate</span>
+                <span>{% if tasks_summary.total > 0 %}{{ tasks_summary.completed|mul:100|div:tasks_summary.total }}{% else %}0{% endif %}%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peer Reviews Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-users mr-2 text-indigo-500"></i>Peer Reviews
+        </h3>
+        <div class="space-y-4">
+            {% for review in peer_reviews %}
+            <div class="border-l-4 border-indigo-500 pl-4 py-2">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <span class="text-sm font-medium text-gray-900">{{ review.reviewer.first_name }} {{ review.reviewer.last_name }}</span>
+                        <span class="text-xs text-gray-500 ml-2">({{ review.review_date|date:"M d, Y" }})</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-bold text-blue-600">{{ review.overall_rating }}/10</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            {% if review.overall_rating >= 8 %}bg-green-100 text-green-800
+                            {% elif review.overall_rating >= 6 %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            <i class="fas fa-star mr-1"></i>
+                            {{ review.overall_rating }}/10
+                        </span>
+                    </div>
+                </div>
+                {% if review.feedback %}
+                <p class="text-sm text-gray-600">{{ review.feedback|truncatechars:100 }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-8">
+                <i class="fas fa-users text-4xl text-gray-400 mb-2"></i>
+                <p class="text-gray-500">No peer reviews received yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- AI Insights & Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- AI Insights -->
+        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-brain mr-2 text-purple-600"></i>AI Insights
+            </h3>
+            <div class="space-y-3">
+                <div class="bg-white rounded-lg p-4 border border-purple-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">Performance Trend</p>
+                            <p class="text-sm text-gray-600">Your performance is trending upward</p>
+                        </div>
+                        <i class="fas fa-arrow-up text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-purple-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">Strength Areas</p>
+                            <p class="text-sm text-gray-600">Communication & teamwork skills</p>
+                        </div>
+                        <i class="fas fa-star text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg p-4 border border-purple-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">Growth Opportunity</p>
+                            <p class="text-sm text-gray-600">Consider leadership training</p>
+                        </div>
+                        <i class="fas fa-lightbulb text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
+            </h3>
+            <div class="space-y-3">
+                <a href="{% url 'add_self_evaluation' %}" class="flex items-center p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                    <i class="fas fa-plus-circle text-blue-600 mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Self Evaluation</p>
+                        <p class="text-sm text-gray-600">Submit your self-assessment</p>
+                    </div>
+                </a>
+                <a href="{% url 'task_list' %}" class="flex items-center p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                    <i class="fas fa-tasks text-green-600 mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">View Tasks</p>
+                        <p class="text-sm text-gray-600">Check your assigned tasks</p>
+                    </div>
+                </a>
+                <a href="{% url 'training_list' %}" class="flex items-center p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                    <i class="fas fa-graduation-cap text-purple-600 mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">Training Programs</p>
+                        <p class="text-sm text-gray-600">Explore available courses</p>
+                    </div>
+                </a>
+                <a href="{% url 'ai_employee_analysis' employee_profile.id %}" class="flex items-center p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
+                    <i class="fas fa-robot text-indigo-600 mr-3"></i>
+                    <div>
+                        <p class="font-medium text-gray-900">AI Analysis</p>
+                        <p class="text-sm text-gray-600">Get AI-powered insights</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Attendance Pie Chart
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent', 'Late'],
+            datasets: [{
+                data: [{{ attendance_data.present }}, {{ attendance_data.absent }}, {{ attendance_data.late }}],
+                backgroundColor: [
+                    '#10B981', // green
+                    '#EF4444', // red
+                    '#F59E0B'  // yellow
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Performance Trend Line Chart
+    const trendCtx = document.getElementById('performanceTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ performance_trend.labels|safe }},
+            datasets: [{
+                label: 'Performance Score',
+                data: {{ performance_trend.scores|safe }},
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#8B5CF6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBorderWidth: 3
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
