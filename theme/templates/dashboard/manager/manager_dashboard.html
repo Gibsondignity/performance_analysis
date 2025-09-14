@@ -1,0 +1,552 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Team Performance Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">Team Analytics</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">Team Performance Dashboard</h1>
+                <p class="text-indigo-100 mt-1">Monitor your team's performance and identify opportunities</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <div class="text-3xl font-bold">{{ ai_insights.avg_team_score }}</div>
+                <div class="text-sm text-indigo-100">Avg Team Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ team_size }}</div>
+                    <div class="text-sm text-gray-600">Team Members</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ ai_insights.avg_team_score|floatformat:1 }}</div>
+                    <div class="text-sm text-gray-600">Avg Performance</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-tasks text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ total_evaluations }}</div>
+                    <div class="text-sm text-gray-600">Total Evaluations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-trophy text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ ai_insights.top_performer }}</div>
+                    <div class="text-sm text-gray-600">Top Performer</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Metrics Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-red-100 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ ai_insights.needs_attention }}</div>
+                    <div class="text-sm text-gray-600">Need Attention</div>
+                    <div class="text-xs text-red-600 mt-1">Performance < 60%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-indigo-100 rounded-lg">
+                    <i class="fas fa-calendar-check text-indigo-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ ai_insights.attendance_rate }}%</div>
+                    <div class="text-sm text-gray-600">Team Attendance</div>
+                    <div class="text-xs {% if ai_insights.attendance_rate >= 90 %}text-green-600{% elif ai_insights.attendance_rate >= 80 %}text-yellow-600{% else %}text-red-600{% endif %} mt-1">
+                        {% if ai_insights.attendance_rate >= 90 %}Above target{% elif ai_insights.attendance_rate >= 80 %}On target{% else %}Below target{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 bg-teal-100 rounded-lg">
+                    <i class="fas fa-graduation-cap text-teal-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <div class="text-2xl font-bold text-gray-900">{{ ai_insights.active_trainings }}</div>
+                    <div class="text-sm text-gray-600">Active Trainings</div>
+                    <div class="text-xs text-blue-600 mt-1">In progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Team Performance Overview -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-chart-bar mr-2 text-blue-500"></i>Team Performance Overview
+            </h3>
+            <div class="h-80">
+                <canvas id="teamPerformanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Feedback Sentiment -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-smile mr-2 text-green-500"></i>Feedback Sentiment
+            </h3>
+            <div class="flex items-center justify-center mb-4">
+                <canvas id="sentimentChart" width="200" height="200"></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold text-green-600">{{ sentiment_data.positive }}</div>
+                    <div class="text-sm text-gray-600">Positive</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-600">{{ sentiment_data.neutral }}</div>
+                    <div class="text-sm text-gray-600">Neutral</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-red-600">{{ sentiment_data.negative }}</div>
+                    <div class="text-sm text-gray-600">Negative</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top and Low Performers -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top Performers -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-trophy mr-2 text-yellow-500"></i>Top Performers
+            </h3>
+            <div class="space-y-4">
+                {% for emp_id, emp_data in top_performers %}
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-medal text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">{{ emp_data.name }}</div>
+                            <div class="text-sm text-gray-600">
+                                {% if emp_data.scores %}
+                                    Avg: {{ emp_data.average_score|floatformat:1 }}%
+                                {% else %}
+                                    No data
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-green-600">
+                            {% if emp_data.scores %}
+                                {{ emp_data.average_score|floatformat:1 }}%
+                            {% else %}
+                                --
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-users text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500">No performance data available</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Employees Needing Attention -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>Need Attention
+            </h3>
+            <div class="space-y-4">
+                {% for emp_id, emp_data in low_performers %}
+                {% if emp_data.scores and emp_data.average_score < 60 %}
+                <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-exclamation text-red-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">{{ emp_data.name }}</div>
+                            <div class="text-sm text-gray-600">
+                                Avg: {{ emp_data.average_score|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-red-600">{{ emp_data.average_score|floatformat:1 }}%</div>
+                        <div class="text-xs text-gray-500">Needs support</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-check-circle text-4xl text-green-400 mb-2"></i>
+                    <p class="text-gray-500">All team members performing well!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Heatmap -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-calendar-alt mr-2 text-indigo-500"></i>Monthly Attendance Overview
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Present</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Late</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance Rate</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for emp_name, attendance in attendance_heatmap.items %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ emp_name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ attendance.present }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {{ attendance.absent }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ attendance.late }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if attendance.total > 0 %}
+                                <div class="flex items-center">
+                                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ attendance.attendance_rate }}%"></div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900">{{ attendance.attendance_rate }}%</span>
+                                </div>
+                            {% else %}
+                                <span class="text-gray-400">No data</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AI Insights Summary -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-robot mr-2 text-blue-500"></i>AI Insights Summary
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-sm text-gray-600 mb-1">Team Performance</div>
+                <div class="text-2xl font-bold text-blue-600">{{ ai_insights.avg_team_score|floatformat:1 }}</div>
+                <div class="text-xs text-gray-500">Average score</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-sm text-gray-600 mb-1">Positive Feedback</div>
+                <div class="text-2xl font-bold text-green-600">{{ ai_insights.sentiment_distribution.positive }}</div>
+                <div class="text-xs text-gray-500">Total positive reviews</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-sm text-gray-600 mb-1">Need Attention</div>
+                <div class="text-2xl font-bold text-red-600">{{ ai_insights.needs_attention }}</div>
+                <div class="text-xs text-gray-500">Employees scoring <60%</div>
+            </div>
+            <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="text-sm text-gray-600 mb-1">Top Performer</div>
+                <div class="text-sm font-bold text-purple-600">{{ ai_insights.top_performer }}</div>
+                <div class="text-xs text-gray-500">Leading the team</div>
+            </div>
+        </div>
+        <div class="mt-4 p-4 bg-white rounded-lg shadow-sm">
+            <p class="text-sm text-gray-700">
+                <strong>AI Recommendation:</strong> Team performance has {% if ai_insights.avg_team_score >= 8 %}excellent{% elif ai_insights.avg_team_score >= 6 %}good{% else %}room for improvement{% endif %} overall.
+                {% if ai_insights.needs_attention > 0 %}Focus on supporting {{ ai_insights.needs_attention }} team member{{ ai_insights.needs_attention|pluralize }} who need{{ ai_insights.needs_attention|pluralize:"s" }} additional coaching.{% endif %}
+                {% if ai_insights.sentiment_distribution.positive > ai_insights.sentiment_distribution.negative %}The team shows positive engagement with more positive than negative feedback.{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Actions for Managers -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-bolt mr-2 text-yellow-500"></i>Manager Actions
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'add_performance_record' %}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group">
+                <i class="fas fa-plus-circle text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Add Performance</p>
+                    <p class="text-sm text-gray-600">Record team performance</p>
+                </div>
+            </a>
+
+            <a href="{% url 'add_evaluation' %}" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group">
+                <i class="fas fa-clipboard-check text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Conduct Evaluation</p>
+                    <p class="text-sm text-gray-600">Evaluate team members</p>
+                </div>
+            </a>
+
+            <a href="{% url 'task_list' %}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group">
+                <i class="fas fa-tasks text-purple-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Manage Tasks</p>
+                    <p class="text-sm text-gray-600">Assign and track tasks</p>
+                </div>
+            </a>
+
+            <a href="{% url 'ai_department_analysis' %}" class="flex items-center p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors group">
+                <i class="fas fa-robot text-indigo-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">AI Team Analysis</p>
+                    <p class="text-sm text-gray-600">Get AI insights</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Team Performance Trends -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-chart-area mr-2 text-green-500"></i>Team Performance Trends
+        </h3>
+        <div class="h-64">
+            <canvas id="teamTrendChart"></canvas>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <div>
+                <div class="text-lg font-bold text-green-600">+8.5%</div>
+                <div class="text-sm text-gray-600">Performance Growth</div>
+            </div>
+            <div>
+                <div class="text-lg font-bold text-blue-600">{{ consistency_rate|default:"--" }}%</div>
+                <div class="text-sm text-gray-600">Consistency Rate</div>
+            </div>
+            <div>
+                <div class="text-lg font-bold text-purple-600">15</div>
+                <div class="text-sm text-gray-600">Improvement Actions</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Team Performance Bar Chart
+    const performanceCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+    new Chart(performanceCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ team_performance_data.labels|safe }},
+            datasets: [{
+                label: 'Performance Score (%)',
+                data: {{ team_performance_data.scores|safe }},
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+
+    // Sentiment Pie Chart
+    const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(sentimentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Neutral', 'Negative'],
+            datasets: [{
+                data: [{{ sentiment_data.positive }}, {{ sentiment_data.neutral }}, {{ sentiment_data.negative }}],
+                backgroundColor: [
+                    '#10B981', // green
+                    '#6B7280', // gray
+                    '#EF4444'  // red
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Team Performance Trend Chart
+    const trendCtx = document.getElementById('teamTrendChart').getContext('2d');
+    const trendLabels = {{ trend_labels|safe }};
+    const trendScores = {{ trend_scores|safe }};
+
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: 'Team Performance',
+                data: trendScores,
+                borderColor: 'rgba(16, 185, 129, 1)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
