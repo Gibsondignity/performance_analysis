@@ -59,6 +59,10 @@ class Command(BaseCommand):
                     employee=record.employee,
                     performance_score=ai_evaluation_data['performance_score'],
                     remarks=ai_evaluation_data['remarks'],
+                    strengths=ai_evaluation_data.get('strengths', ''),
+                    areas_for_improvement=ai_evaluation_data.get('areas_for_improvement', ''),
+                    goals_achieved=ai_evaluation_data.get('goals_achieved', ''),
+                    development_needs=ai_evaluation_data.get('development_needs', ''),
                     evaluation_type='AI',
                     created_by=evaluator
                 )
