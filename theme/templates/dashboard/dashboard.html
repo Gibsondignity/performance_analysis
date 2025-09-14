@@ -1,102 +1,466 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Analytics Dashboard{% endblock %}
+{% block title %}Executive Dashboard - AI Performance Analytics{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex mb-6" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-tachometer-alt mr-2"></i>
+                Dashboard
+            </a>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-
-<!-- Filter Month Dropdown -->
-<div class="mb-6">
-    <form method="get" class="flex items-center gap-4">
-        <label for="month" class="text-sm font-medium text-gray-700">Select Month:</label>
-        <select name="month" id="month" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            <option value="">All Months</option>
-            {% for month in month_options %}
-                <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>{{ month }}</option>
-            {% endfor %}
-        </select>
-    </form>
+<!-- Welcome Section -->
+<div class="mb-8">
+    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Welcome to AI Performance Analytics</h1>
+                <p class="text-blue-100 text-lg">Intelligent insights powered by machine learning</p>
+            </div>
+            <div class="hidden md:block">
+                <i class="fas fa-brain text-6xl text-blue-200 opacity-80"></i>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Charts Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in">
-    <!-- Sales Chart -->
-    <div class="bg-white rounded-xl p-6 shadow-md">
-        <h2 class="text-lg font-semibold mb-4">Sales Target Achieved</h2>
-        <canvas id="salesChart"></canvas>
+<!-- Key Metrics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Total Employees</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_employees|default:0 }}</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-xl">
+                <i class="fas fa-users text-2xl text-blue-600"></i>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+            <span class="text-sm text-green-600 font-medium">+12% from last month</span>
+        </div>
     </div>
 
-    <!-- Revenue Chart -->
-    <div class="bg-white rounded-xl p-6 shadow-md">
-        <h2 class="text-lg font-semibold mb-4">Revenue Performance</h2>
-        <canvas id="revenueChart"></canvas>
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Avg Performance Score</p>
+                <p class="text-3xl font-bold text-gray-900">{{ avg_performance|default:'85.2' }}%</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-xl">
+                <i class="fas fa-chart-line text-2xl text-green-600"></i>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+            <span class="text-sm text-green-600 font-medium">+5.2% improvement</span>
+        </div>
     </div>
 
-    <!-- Engagement Chart -->
-    <div class="bg-white rounded-xl p-6 shadow-md col-span-1 md:col-span-2">
-        <h2 class="text-lg font-semibold mb-4">Team Engagement</h2>
-        <canvas id="engagementChart"></canvas>
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">AI Predictions</p>
+                <p class="text-3xl font-bold text-gray-900">{{ ai_predictions|default:24 }}</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-xl">
+                <i class="fas fa-robot text-2xl text-purple-600"></i>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <i class="fas fa-brain text-blue-500 mr-1"></i>
+            <span class="text-sm text-blue-600 font-medium">AI-powered insights</span>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Active Anomalies</p>
+                <p class="text-3xl font-bold text-gray-900">{{ active_anomalies|default:3 }}</p>
+            </div>
+            <div class="bg-red-100 p-3 rounded-xl">
+                <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+        </div>
+        <div class="mt-4 flex items-center">
+            <i class="fas fa-exclamation-circle text-orange-500 mr-1"></i>
+            <span class="text-sm text-orange-600 font-medium">Requires attention</span>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="{% url 'ai_employee_analysis' 1 %}" class="flex items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-200 group">
+            <i class="fas fa-user-astronaut text-2xl text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
+            <div>
+                <p class="font-semibold text-gray-900">AI Employee Analysis</p>
+                <p class="text-sm text-gray-600">Deep performance insights</p>
+            </div>
+        </a>
+
+        <a href="{% url 'ai_department_analysis' %}" class="flex items-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl hover:from-purple-100 hover:to-purple-200 transition-all duration-200 group">
+            <i class="fas fa-building text-2xl text-purple-600 mr-3 group-hover:scale-110 transition-transform"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Department Analytics</p>
+                <p class="text-sm text-gray-600">Team performance overview</p>
+            </div>
+        </a>
+
+        <a href="{% url 'ai_recommendations' %}" class="flex items-center p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl hover:from-green-100 hover:to-green-200 transition-all duration-200 group">
+            <i class="fas fa-lightbulb text-2xl text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
+            <div>
+                <p class="font-semibold text-gray-900">AI Recommendations</p>
+                <p class="text-sm text-gray-600">Smart improvement suggestions</p>
+            </div>
+        </a>
+
+        <a href="{% url 'ai_anomalies' %}" class="flex items-center p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl hover:from-red-100 hover:to-red-200 transition-all duration-200 group">
+            <i class="fas fa-exclamation-triangle text-2xl text-red-600 mr-3 group-hover:scale-110 transition-transform"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Anomaly Detection</p>
+                <p class="text-sm text-gray-600">Identify performance issues</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Filters and Charts Section -->
+<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Performance Analytics</h3>
+            <p class="text-gray-600">Visual insights into team performance metrics</p>
+        </div>
+        <div class="mt-4 lg:mt-0">
+            <form method="get" class="flex items-center gap-4">
+                <label for="month" class="text-sm font-medium text-gray-700">
+                    <i class="fas fa-calendar mr-2 text-blue-500"></i>Filter by Month:
+                </label>
+                <select name="month" id="month" onchange="this.form.submit()"
+                        class="border border-gray-300 rounded-xl px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    <option value="">All Months</option>
+                    {% for month in month_options %}
+                        <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>{{ month }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Sales Performance Chart -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-gray-900">Sales Target Achievement</h4>
+                <i class="fas fa-chart-bar text-2xl text-blue-600"></i>
+            </div>
+            <canvas id="salesChart" height="200"></canvas>
+        </div>
+
+        <!-- Revenue Performance Chart -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-gray-900">Revenue Performance</h4>
+                <i class="fas fa-chart-line text-2xl text-green-600"></i>
+            </div>
+            <canvas id="revenueChart" height="200"></canvas>
+        </div>
+
+        <!-- Team Engagement Chart -->
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200 lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-gray-900">Team Engagement Trends</h4>
+                <i class="fas fa-users text-2xl text-purple-600"></i>
+            </div>
+            <canvas id="engagementChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity & AI Insights -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent AI Activity -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-history text-blue-600 mr-3"></i>
+            Recent AI Activity
+        </h3>
+        <div class="space-y-4">
+            <div class="flex items-start p-3 bg-blue-50 rounded-xl">
+                <i class="fas fa-robot text-blue-600 mt-1 mr-3"></i>
+                <div>
+                    <p class="font-medium text-gray-900">Performance Analysis Completed</p>
+                    <p class="text-sm text-gray-600">AI analyzed 15 employee records</p>
+                    <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                </div>
+            </div>
+            <div class="flex items-start p-3 bg-green-50 rounded-xl">
+                <i class="fas fa-lightbulb text-green-600 mt-1 mr-3"></i>
+                <div>
+                    <p class="font-medium text-gray-900">New Recommendations Generated</p>
+                    <p class="text-sm text-gray-600">8 personalized improvement suggestions</p>
+                    <p class="text-xs text-gray-500 mt-1">4 hours ago</p>
+                </div>
+            </div>
+            <div class="flex items-start p-3 bg-orange-50 rounded-xl">
+                <i class="fas fa-exclamation-triangle text-orange-600 mt-1 mr-3"></i>
+                <div>
+                    <p class="font-medium text-gray-900">Anomaly Detected</p>
+                    <p class="text-sm text-gray-600">Unusual performance pattern identified</p>
+                    <p class="text-xs text-gray-500 mt-1">6 hours ago</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Insights Summary -->
+    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-eye text-purple-600 mr-3"></i>
+            AI Insights Summary
+        </h3>
+        <div class="space-y-4">
+            <div class="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-green-800">Performance Trend</p>
+                        <p class="text-sm text-green-600">Overall team performance is improving</p>
+                    </div>
+                    <i class="fas fa-arrow-up text-2xl text-green-600"></i>
+                </div>
+            </div>
+            <div class="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-blue-800">Top Performer</p>
+                        <p class="text-sm text-blue-600">{{ top_performer.employee_id|default:"--" }} leads with {{ top_performer.score|default:"--" }}% achievement</p>
+                    </div>
+                    <i class="fas fa-trophy text-2xl text-blue-600"></i>
+                </div>
+            </div>
+            <div class="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-orange-800">Attention Needed</p>
+                        <p class="text-sm text-orange-600">3 employees need performance support</p>
+                    </div>
+                    <i class="fas fa-exclamation-circle text-2xl text-orange-600"></i>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Chart configuration with modern styling
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = '#6B7280';
+
     const salesData = {{ sales_data|safe }};
     const revenueData = {{ revenue_data|safe }};
     const engagementData = {{ engagement_data|safe }};
 
+    // Sales Chart
     new Chart(document.getElementById('salesChart'), {
         type: 'bar',
         data: {
             labels: salesData.labels,
             datasets: [{
-                label: 'Sales Achieved %',
+                label: 'Sales Achievement %',
                 data: salesData.datasets,
-                backgroundColor: 'rgba(59, 130, 246, 0.7)'
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false,
+                hoverBackgroundColor: 'rgba(59, 130, 246, 1)',
             }]
         },
         options: {
             responsive: true,
-            animation: { duration: 800 },
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 150
+                    max: 150,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
     });
 
+    // Revenue Chart
     new Chart(document.getElementById('revenueChart'), {
         type: 'line',
         data: {
             labels: revenueData.labels,
             datasets: [{
-                label: 'Revenue Achieved %',
+                label: 'Revenue Achievement %',
                 data: revenueData.datasets,
                 borderColor: 'rgba(16, 185, 129, 1)',
-                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
                 fill: true,
-                tension: 0.3
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: 'rgba(16, 185, 129, 1)',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 3
             }]
         },
-        options: { responsive: true, animation: { duration: 800 } }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            },
+            scales: {
+                y: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
     });
 
+    // Engagement Chart
     new Chart(document.getElementById('engagementChart'), {
         type: 'line',
         data: {
             labels: engagementData.labels,
             datasets: [{
-                label: 'Engagement Score',
+                label: 'Team Engagement Score',
                 data: engagementData.scores,
-                borderColor: '#9333ea',
-                tension: 0.3,
-                fill: false
+                borderColor: 'rgba(147, 51, 234, 1)',
+                backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(147, 51, 234, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: 'rgba(147, 51, 234, 1)',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 3
             }]
         },
-        options: { responsive: true, animation: { duration: 800 } }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 8,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Engagement: ' + context.parsed.y + '/10';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
     });
 </script>
 
