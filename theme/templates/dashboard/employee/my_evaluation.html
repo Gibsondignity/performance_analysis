@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}AI Performance Evaluations - My Reviews{% endblock %}
 
@@ -117,15 +118,10 @@
                 <p class="text-sm font-medium text-gray-600">Average Score</p>
                 <p class="text-3xl font-bold text-green-600">
                     {% if evaluations %}
-                        {% widthratio evaluations|length 1 0 %}
-                        {% for eval in evaluations %}
-                            {% widthratio eval.performance_score 1 0 %}
-                        {% endfor %}
-                        {{ evaluations|length|div:1|mul:evaluations.0.performance_score|default:0 }}
+                        {{ evaluations.0.performance_score|default:0 }}/10
                     {% else %}
-                        0
+                        0/10
                     {% endif %}
-                    /10
                 </p>
             </div>
             <div class="bg-green-100 p-3 rounded-lg">
@@ -142,7 +138,7 @@
                 <p class="text-3xl font-bold text-purple-600">
                     {% for eval in evaluations %}
                         {% if eval.evaluation_type == 'AI' %}
-                            {% cycle 1 2 3 4 5 6 7 8 9 10 as counter %}
+                            {% cycle 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 as counter %}
                         {% endif %}
                     {% endfor %}
                     {{ counter|default:0 }}
