@@ -53,10 +53,17 @@ class User(AbstractBaseUser, PermissionsMixin):
             'MANAGER': 'MG',
             'EMPLOYEE': 'EM'
         }.get(role, 'EM')
+
         # Find the last employee_id with this prefix
         last_id = User.objects.filter(employee_id__startswith=prefix).order_by('-employee_id').first()
         if last_id:
-            num = int(last_id.employee_id[2:]) + 1
+            # Extract the number part after the prefix
+            num_str = last_id.employee_id[len(prefix):]
+            try:
+                num = int(num_str) + 1
+            except ValueError:
+                # If parsing fails, start from 1
+                num = 1
         else:
             num = 1
         return f"{prefix}{num:04d}"

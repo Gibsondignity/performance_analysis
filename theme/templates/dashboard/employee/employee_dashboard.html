@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}My Performance Dashboard{% endblock %}
 
@@ -124,7 +125,7 @@
             {% for kpi_name, data in kpi_data.items %}
             <div class="bg-gray-50 rounded-lg p-4">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-medium text-gray-700 capitalize">{{ kpi_name|replace:"_"," " }}</h3>
+                    <h3 class="text-sm font-medium text-gray-700 capitalize">{{ kpi_name|replace:"_ : " }}</h3>
                     <span class="text-sm font-bold text-blue-600">{{ data.percentage|floatformat:1 }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
@@ -411,7 +412,7 @@
                         <p class="text-sm text-gray-600">Explore available courses</p>
                     </div>
                 </a>
-                <a href="{% url 'ai_employee_analysis' employee_profile.id %}" class="flex items-center p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
+                <a href="{% if employee.id %}{% url 'ai_employee_analysis' employee.id %}{% else %}#{% endif %}" class="flex items-center p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
                     <i class="fas fa-robot text-indigo-600 mr-3"></i>
                     <div>
                         <p class="font-medium text-gray-900">AI Analysis</p>
