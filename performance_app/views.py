@@ -390,12 +390,21 @@ def add_employee(request):
 
         if user_form.is_valid() and profile_form.is_valid():
             try:
-                user = user_form.save()
+                # Create user with auto-generated employee_id using CustomUserManager
+                user_data = user_form.cleaned_data
+                user = User.objects.create_user(
+                    employee_id=None,  # Will be auto-generated
+                    password=user_data.get('password'),
+                    role=user_data.get('role'),
+                    branch=user_data.get('branch'),
+                    is_active=user_data.get('is_active', True)
+                )
+
                 profile = profile_form.save(commit=False)
                 profile.user = user
                 profile.created_by = request.user
                 profile.save()
-                messages.success(request, '✅ Employee added successfully.')
+                messages.success(request, f'✅ Employee added successfully. Employee ID: {user.employee_id}')
                 return redirect('employee_management')
             except IntegrityError as e:
                 if 'unique constraint' in str(e).lower() or 'UNIQUE constraint failed' in str(e):
