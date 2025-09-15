@@ -2,15 +2,39 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.forms.widgets import TextInput, PasswordInput, Select, DateInput, CheckboxInput, NumberInput, Textarea
 
 from .models import *
 
 
+def validate_strong_password(value):
+    """
+    Custom password validator for strong passwords
+    """
+    if len(value) < 8:
+        raise ValidationError('Password must be at least 8 characters long.')
+
+    if not any(char.isdigit() for char in value):
+        raise ValidationError('Password must contain at least one digit.')
+
+    if not any(char.isupper() for char in value):
+        raise ValidationError('Password must contain at least one uppercase letter.')
+
+    if not any(char.islower() for char in value):
+        raise ValidationError('Password must contain at least one lowercase letter.')
+
+    # Check for at least one special character
+    special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+    if not any(char in special_chars for char in value):
+        raise ValidationError('Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?).')
+
+
 
 class UserCreationForm(forms.ModelForm):
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput, validators=[validate_strong_password])
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput)
 
     class Meta:
@@ -26,6 +50,9 @@ class UserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        # If no employee_id provided, generate one
+        if not user.employee_id and hasattr(user, 'role'):
+            user.employee_id = User.generate_employee_id(user.role)
         user.set_password(self.cleaned_data['password1'])  # Hash the password
         if commit:
             user.save()
@@ -48,9 +75,10 @@ class UserChangeForm(forms.ModelForm):
 class UserForm(forms.ModelForm):
     password = forms.CharField(
         required=False,
+        validators=[validate_strong_password],
         widget=PasswordInput(attrs={
             'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
-            'placeholder': 'Enter password'
+            'placeholder': 'Enter password (min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char)'
         })
     )
 
@@ -131,9 +159,10 @@ class EmployeeProfileForm(forms.ModelForm):
 class EditUserForm(forms.ModelForm):
     password = forms.CharField(
         required=False,
+        validators=[validate_strong_password],
         widget=PasswordInput(attrs={
             'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
-            'placeholder': 'Enter password'
+            'placeholder': 'Enter password (min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char)'
         })
     )
 
