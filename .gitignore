@@ -1,0 +1,7 @@
+ai_engine/__pycache__
+performance_analysis/__pycache__
+performance_app/__pycache__
+performance_app/migrations/__pycache__
+performance_app/templatetags/__pycache__
+theme/__pycache__
+theme/templatetags/__pycache__
