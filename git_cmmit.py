@@ -155,7 +155,7 @@ def main():
         
         # Final push
         print("\n🚀 Pushing to GitHub...")
-        success, output = run_command("git push origin hubtel_payment", repo_path)
+        success, output = run_command("git push origin daddydash", repo_path)
         if not success:
             print(f"❌ Push failed: {output}")
             print("\n💡 Tips:")
@@ -163,7 +163,7 @@ def main():
             print("- Check authentication")
             sys.exit(1)
         
-        print("\n✅ Successfully pushed all changes to GitHub hubtel_payment branch!")
+        print("\n✅ Successfully pushed all changes to GitHub daddydash branch!")
         
     except KeyboardInterrupt:
         print("\n\nOperation cancelled by user.")
