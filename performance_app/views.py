@@ -47,9 +47,9 @@ def role_required(allowed_roles):
     return decorator
 
 
-def hr_or_admin_required(view_func):
-    """Decorator for HR and admin access"""
-    return role_required(['HR', 'HIGH_MANAGER'])(view_func)
+def admin_required(view_func):
+    """Decorator for admin access"""
+    return role_required(['ADMIN'])(view_func)
 
 
 def manager_or_above_required(view_func):
@@ -76,31 +76,40 @@ def employee_access_only(view_func):
 def custom_login_view(request):
     error = None
     if request.method == 'POST':
-        employee_id = request.POST.get('employee_id')
+        email = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=employee_id, password=password)
-
+        print(f"Attempting login with email: {email} and password: {password}")
+        user = authenticate(request, username=email, password=password)
+        print(user)
         if user:
             login(request, user)
             profile = EmployeeProfile.objects.filter(user=user).first()
             # Fetch employee profile details
             if profile:
                 print(f"Profile found: {profile}")
-                request.session['employee_id'] = user.employee_id
+                request.session['email'] = user.email
                 request.session['first_name'] = profile.first_name or ''
                 request.session['last_name'] = profile.last_name or ''
             else:
                 # Profile doesn't exist yet
-                request.session['employee_id'] = user.employee_id
+                request.session['email'] = user.email
                 request.session['first_name'] = ''
                 request.session['last_name'] = ''
-
+            
             if user.role == 'EMPLOYEE':
+                print("Redirecting to employee dashboard")
                 return redirect('employee')
             else:
+                print("Redirecting to dashboard")
                 return redirect('dashboard')
+            # if user.role == 'EMPLOYEE':
+            #     print("Redirecting to employee dashboard")
+            #     return redirect('employee')
+            # else:
+            #     print("Redirecting to dashboard")
+            #     return redirect('dashboard')
 
-        error = "Invalid Employee ID or password"
+        error = "Invalid email or password"
 
     return render(request, 'login.html', {'error': error, 'year': now().year})
 
@@ -125,8 +134,8 @@ def analytical_dashboard(request):
     if user.role == 'MANAGER':
         team_members = EmployeeProfile.objects.filter(user__role='EMPLOYEE')
     elif user.role == 'MIDDLE_MANAGER':
-        team_members = EmployeeProfile.objects.filter(user__role__in=['EMPLOYEE', 'MANAGER'])
-    elif user.role in ['HIGH_MANAGER', 'HR']:
+        team_members = EmployeeProfile.objects.filter(user__role='EMPLOYEE')
+    elif user.role == 'ADMIN':
         team_members = EmployeeProfile.objects.all()
     else:
         team_members = EmployeeProfile.objects.none()
@@ -253,6 +262,12 @@ def analytical_dashboard(request):
         status__in=['PLANNED', 'IN_PROGRESS']
     ).count()
 
+    # Get achievements data
+    recent_achievements = Achievement.objects.filter(
+        employee__in=team_members,
+        is_published=True
+    ).select_related('employee__user').order_by('-date_achieved')[:10]
+
     ai_insights = {
         'total_evaluations': total_evaluations,
         'avg_team_score': round(avg_team_score, 1),
@@ -260,7 +275,8 @@ def analytical_dashboard(request):
         'top_performer': top_performers[0][1]['name'] if top_performers else 'N/A',
         'needs_attention': len([p for p in employee_performance.values() if p['average_score'] < 60]),
         'attendance_rate': round(attendance_rate, 1),
-        'active_trainings': active_trainings
+        'active_trainings': active_trainings,
+        'recent_achievements': recent_achievements
     }
 
     # Calculate team trend data for the last 12 months
@@ -343,7 +359,7 @@ def analytical_dashboard(request):
 
 
 # HR MANAGER DASHBOARD
-@hr_or_admin_required
+@admin_required
 def employee_management(request):
 
     if request.method == 'POST':
@@ -381,7 +397,7 @@ def employee_management(request):
 
 
 
-@hr_or_admin_required
+@admin_required
 def add_employee(request):
 
     if request.method == 'POST':
@@ -393,6 +409,7 @@ def add_employee(request):
                 # Create user with auto-generated employee_id using CustomUserManager
                 user_data = user_form.cleaned_data
                 user = User.objects.create_user(
+                    email=user_data.get('email'),
                     employee_id=None,  # Will be auto-generated
                     password=user_data.get('password'),
                     role=user_data.get('role'),
@@ -986,7 +1003,7 @@ def add_manager_evaluation(request, employee_id):
     """
     Add manager evaluation for a specific employee
     """
-    if request.user.role not in ['MANAGER', 'MIDDLE_MANAGER', 'HIGH_MANAGER', 'HR']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add manager evaluations.')
         return redirect('dashboard')
 
@@ -1042,7 +1059,7 @@ def add_360_evaluation(request, employee_id):
     """
     Add 360-degree evaluation combining self, manager, and peer feedback
     """
-    if request.user.role not in ['MANAGER', 'MIDDLE_MANAGER', 'HIGH_MANAGER', 'HR']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add 360-degree evaluations.')
         return redirect('dashboard')
 
@@ -1244,7 +1261,7 @@ def delete_evaluation(request, pk):
 
 # HIGH LEVEL MANAGER VIEWS
 @login_required
-@hr_or_admin_required
+@admin_required
 def deep_analytics(request):
     records = PerformanceRecord.objects.select_related('employee__user')
 
@@ -1679,7 +1696,7 @@ def ai_employee_analysis(request, employee_id):
         messages.error(request, f'❌ Analysis error: {str(e)}')
         return redirect('employee_management')
 
-@hr_or_admin_required
+@admin_required
 def ai_department_analysis(request):
     """
     AI-powered department analysis
@@ -1722,7 +1739,7 @@ def ai_recommendations_dashboard(request):
     """
     from ai_engine.models import Recommendation
 
-    if request.user.role not in ['HR', 'HIGH_MANAGER', 'MIDDLE_MANAGER', 'MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to access AI recommendations.')
         return redirect('dashboard')
 
@@ -1763,7 +1780,7 @@ def ai_insights_dashboard(request):
     """
     from ai_engine.models import PerformanceInsight
 
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to access AI insights.')
         return redirect('dashboard')
 
@@ -1789,7 +1806,7 @@ def ai_anomalies_dashboard(request):
     """
     from ai_engine.models import Anomaly
 
-    if request.user.role not in ['HR', 'HIGH_MANAGER', 'MIDDLE_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to access anomaly detection.')
         return redirect('dashboard')
 
@@ -1811,7 +1828,7 @@ def ai_anomalies_dashboard(request):
 
 
 @login_required
-@hr_or_admin_required
+@admin_required
 def hr_dashboard(request):
     """
     HR Executive Dashboard with real-time organization-wide analytics
@@ -1999,6 +2016,21 @@ def hr_dashboard(request):
             # Use average of available data or 0
             trend_scores.append(round(sum(performance_scores) / len(performance_scores), 1) if performance_scores else 0)
 
+    # Get achievements data for organization insights
+    recent_achievements = Achievement.objects.filter(
+        is_published=True
+    ).select_related('employee__user').order_by('-date_achieved')[:10]
+
+    # Calculate achievement statistics
+    achievement_stats = {
+        'total_achievements': Achievement.objects.count(),
+        'published_achievements': Achievement.objects.filter(is_published=True).count(),
+        'rated_achievements': Achievement.objects.filter(admin_rating__isnull=False).count(),
+        'avg_rating': Achievement.objects.filter(admin_rating__isnull=False).aggregate(
+            avg_rating=Avg('admin_rating')
+        )['avg_rating'] or 0
+    }
+
     context = {
         'total_employees': total_employees,
         'departments_count': departments_count,
@@ -2015,6 +2047,8 @@ def hr_dashboard(request):
         'development_needs': development_needs,
         'trend_labels': trend_labels,
         'trend_scores': trend_scores,
+        'achievement_stats': achievement_stats,
+        'recent_achievements': recent_achievements,
     }
 
     return render(request, 'dashboard/hr/hr_dashboard.html', context)
@@ -2026,7 +2060,7 @@ def ai_demo_dashboard(request):
     AI Features Demonstration Dashboard - Perfect for project defense
     Showcases all AI capabilities in one comprehensive view
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to access AI demonstration.')
         return redirect('dashboard')
 
@@ -2130,8 +2164,8 @@ def attendance_list(request):
     # Role-based filtering
     if user.role == 'EMPLOYEE':
         records = records.filter(employee__user=user)
-    elif user.role in ['MANAGER', 'MIDDLE_MANAGER']:
-        # Managers see their team's attendance
+    elif user.role == 'ADMIN':
+        # Admin sees all attendance
         team_members = EmployeeProfile.objects.filter(
             Q(user__role='EMPLOYEE') |
             Q(user__role='MANAGER') |
@@ -2161,7 +2195,7 @@ def attendance_list(request):
         elif status == 'early_departure':
             records = records.filter(is_early_departure=True)
 
-    employees = EmployeeProfile.objects.all() if user.role in ['HR', 'HIGH_MANAGER'] else None
+    employees = EmployeeProfile.objects.all() if user.role == 'ADMIN' else None
 
     context = {
         'records': records,
@@ -2180,7 +2214,7 @@ def add_attendance(request):
     """
     Add attendance record
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER', 'MANAGER', 'MIDDLE_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add attendance records.')
         return redirect('dashboard')
 
@@ -2243,7 +2277,7 @@ def task_list(request):
     # Role-based filtering
     if user.role == 'EMPLOYEE':
         tasks = tasks.filter(employee__user=user)
-    elif user.role in ['MANAGER', 'MIDDLE_MANAGER']:
+    elif user.role == 'ADMIN':
         team_members = EmployeeProfile.objects.filter(
             Q(user__role='EMPLOYEE') |
             Q(user__role='MANAGER')
@@ -2262,7 +2296,7 @@ def task_list(request):
     if priority:
         tasks = tasks.filter(priority=priority)
 
-    employees = EmployeeProfile.objects.all() if user.role in ['HR', 'HIGH_MANAGER'] else None
+    employees = EmployeeProfile.objects.all() if user.role == 'ADMIN' else None
 
     context = {
         'tasks': tasks,
@@ -2280,7 +2314,7 @@ def add_task(request):
     """
     Add new task
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER', 'MANAGER', 'MIDDLE_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add tasks.')
         return redirect('dashboard')
 
@@ -2456,7 +2490,7 @@ def training_list(request):
     if training_type:
         trainings = trainings.filter(training_type__icontains=training_type)
 
-    employees = EmployeeProfile.objects.all() if user.role in ['HR', 'HIGH_MANAGER'] else None
+    employees = EmployeeProfile.objects.all() if user.role == 'ADMIN' else None
 
     context = {
         'trainings': trainings,
@@ -2474,7 +2508,7 @@ def add_training(request):
     """
     Add training record
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER', 'MANAGER', 'MIDDLE_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add training records.')
         return redirect('dashboard')
 
@@ -2551,7 +2585,7 @@ def kpi_list(request):
     """
     List KPIs by role
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to manage KPIs.')
         return redirect('dashboard')
 
@@ -2576,7 +2610,7 @@ def add_kpi(request):
     """
     Add new KPI
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add KPIs.')
         return redirect('dashboard')
 
@@ -2606,7 +2640,7 @@ def edit_kpi(request, kpi_id):
     """
     Edit existing KPI
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to edit KPIs.')
         return redirect('dashboard')
 
@@ -2637,7 +2671,7 @@ def delete_kpi(request, kpi_id):
     """
     Delete KPI
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to delete KPIs.')
         return redirect('dashboard')
 
@@ -2656,7 +2690,7 @@ def evaluation_criteria_list(request):
     """
     List evaluation criteria by role
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to manage evaluation criteria.')
         return redirect('dashboard')
 
@@ -2681,7 +2715,7 @@ def add_evaluation_criteria(request):
     """
     Add evaluation criteria
     """
-    if request.user.role not in ['HR', 'HIGH_MANAGER']:
+    if request.user.role != 'ADMIN':
         messages.error(request, '❌ You do not have permission to add evaluation criteria.')
         return redirect('dashboard')
 
@@ -2717,8 +2751,8 @@ def attendance_analytics(request):
     # Role-based filtering
     if user.role == 'EMPLOYEE':
         attendance_records = attendance_records.filter(employee__user=user)
-    elif user.role in ['MANAGER', 'MIDDLE_MANAGER']:
-        # Managers see their team's attendance
+    elif user.role == 'ADMIN':
+        # Admin sees all attendance
         team_members = EmployeeProfile.objects.filter(
             Q(user__role='EMPLOYEE') |
             Q(user__role='MANAGER')
@@ -2801,7 +2835,7 @@ def attendance_analytics(request):
     employee_labels = [f"{emp['employee__first_name']} {emp['employee__last_name']}" for emp in employee_ranking]
     employee_rates = [round(emp['attendance_rate'], 1) for emp in employee_ranking]
 
-    employees = EmployeeProfile.objects.all() if user.role in ['HR', 'HIGH_MANAGER'] else None
+    employees = EmployeeProfile.objects.all() if user.role == 'ADMIN' else None
 
     context = {
         'total_records': total_records,
@@ -2841,7 +2875,7 @@ def task_analytics(request):
     # Role-based filtering
     if user.role == 'EMPLOYEE':
         tasks = tasks.filter(employee__user=user)
-    elif user.role in ['MANAGER', 'MIDDLE_MANAGER']:
+    elif user.role == 'ADMIN':
         team_members = EmployeeProfile.objects.filter(
             Q(user__role='EMPLOYEE') |
             Q(user__role='MANAGER')
@@ -3069,8 +3103,8 @@ def generate_performance_report(request):
         attendance_records = attendance_records.filter(employee__user=user)
         tasks = tasks.filter(employee__user=user)
         trainings = trainings.filter(employee__user=user)
-    elif user.role in ['MANAGER', 'MIDDLE_MANAGER']:
-        # Managers can see their team's data
+    elif user.role == 'ADMIN':
+        # Admin can see all data
         team_members = EmployeeProfile.objects.filter(
             Q(user__role='EMPLOYEE') |
             Q(user__role='MANAGER')
@@ -3099,7 +3133,7 @@ def generate_performance_report(request):
 
 
 def generate_pdf_report(performance_records, evaluations, attendance_records, tasks, trainings,
-                       start_date, end_date, department):
+                        start_date, end_date, department):
     """
     Generate PDF report using ReportLab
     """
@@ -3136,6 +3170,7 @@ def generate_pdf_report(performance_records, evaluations, attendance_records, ta
     elements.append(Paragraph("Performance Summary", styles['Heading2']))
 
     perf_data = [['Employee', 'Avg Sales %', 'Avg Revenue %', 'Avg Engagement', 'Evaluations']]
+
     for record in performance_records.values('employee__first_name', 'employee__last_name').distinct():
         emp_name = f"{record['employee__first_name']} {record['employee__last_name']}"
         emp_records = performance_records.filter(
@@ -3183,6 +3218,7 @@ def generate_pdf_report(performance_records, evaluations, attendance_records, ta
     elements.append(Paragraph("Attendance Summary", styles['Heading2']))
 
     attendance_data = [['Employee', 'Total Days', 'Present', 'Absent', 'Late', 'Attendance %']]
+
     for record in attendance_records.values('employee__first_name', 'employee__last_name').distinct():
         emp_name = f"{record['employee__first_name']} {record['employee__last_name']}"
         emp_attendance = attendance_records.filter(
@@ -3209,14 +3245,47 @@ def generate_pdf_report(performance_records, evaluations, attendance_records, ta
     ]))
     elements.append(attendance_table)
 
+    # Achievements Summary
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Achievements Summary", styles['Heading2']))
+
+    achievement_data = [['Employee', 'Achievements', 'Avg Rating', 'Published']]
+
+    for record in performance_records.values('employee__first_name', 'employee__last_name').distinct():
+        emp_name = f"{record['employee__first_name']} {record['employee__last_name']}"
+        emp_achievements = Achievement.objects.filter(
+            employee__first_name=record['employee__first_name'],
+            employee__last_name=record['employee__last_name']
+        )
+        
+        total_achievements = emp_achievements.count()
+        published_achievements = emp_achievements.filter(is_published=True).count()
+        
+        # Calculate average rating
+        ratings = emp_achievements.filter(admin_rating__isnull=False).values_list('admin_rating', flat=True)
+        avg_rating = sum(ratings) / len(ratings) if ratings else 0
+
+        achievement_data.append([
+            emp_name, str(total_achievements), f"{avg_rating:.1f}/10", str(published_achievements)
+        ])
+
+    if len(achievement_data) > 1:  # Only add if there are achievements
+        achievement_table = Table(achievement_data)
+        achievement_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.green),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(achievement_table)
+
     doc.build(elements)
 
     buffer.seek(0)
     response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="performance_report.pdf"'
     return response
-
-
 def generate_excel_report(performance_records, evaluations, attendance_records, tasks, trainings,
                          start_date, end_date, department):
     """
@@ -3401,11 +3470,35 @@ def generate_csv_report(performance_records, evaluations, attendance_records, ta
             emp_name, str(total), str(present), str(absent), str(late), f"{attendance_rate:.1f}%"
         ])
 
+    writer.writerow([])
+
+    # Achievements Summary
+    writer.writerow(['ACHIEVEMENTS SUMMARY'])
+    writer.writerow(['Employee', 'Total Achievements', 'Published Achievements', 'Average Rating'])
+
+    for record in performance_records.values('employee__first_name', 'employee__last_name').distinct():
+        emp_name = f"{record['employee__first_name']} {record['employee__last_name']}"
+        emp_achievements = Achievement.objects.filter(
+            employee__first_name=record['employee__first_name'],
+            employee__last_name=record['employee__last_name']
+        )
+        
+        total_achievements = emp_achievements.count()
+        published_achievements = emp_achievements.filter(is_published=True).count()
+        
+        # Calculate average rating
+        ratings = emp_achievements.filter(admin_rating__isnull=False).values_list('admin_rating', flat=True)
+        avg_rating = sum(ratings) / len(ratings) if ratings else 0
+
+        writer.writerow([
+            emp_name, str(total_achievements), str(published_achievements), f"{avg_rating:.1f}/10"
+        ])
+
     return response
 
 
 @login_required
-@hr_or_admin_required
+@admin_required
 def export_organization_report(request):
     """
     Enhanced organization-wide export functionality
@@ -3719,5 +3812,81 @@ def generate_organization_csv_report(performance_records, evaluations, attendanc
             emp_evaluations,
             f"{attendance_rate:.1f}%"
         ])
+    
+        return response
+    
+    
+@login_required
+def achievement_list(request):
+    achievements = Achievement.objects.select_related('employee__user').order_by('-date_achieved')
+    context = {
+        'achievements': achievements,
+    }
+    return render(request, 'achievements/achievement_list.html', context)
 
-    return response
+
+@login_required
+@manager_or_above_required
+def add_achievement(request):
+    if request.method == 'POST':
+        employee_id = request.POST.get('employee')
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        date_achieved = request.POST.get('date_achieved')
+        category = request.POST.get('category', '')
+        try:
+            employee = get_object_or_404(EmployeeProfile, id=employee_id)
+            Achievement.objects.create(
+                employee=employee,
+                title=title,
+                description=description,
+                date_achieved=date_achieved,
+                category=category,
+                created_by=request.user
+            )
+            messages.success(request, 'Achievement added successfully.')
+            return redirect('achievement_list')
+        except Exception as e:
+            messages.error(request, f'Error adding achievement: {str(e)}')
+    employees = EmployeeProfile.objects.filter(user__role='EMPLOYEE')
+    return render(request, 'achievements/add_achievement.html', {'employees': employees})
+
+
+@login_required
+@admin_required
+def rate_achievement(request, achievement_id):
+    achievement = get_object_or_404(Achievement, id=achievement_id)
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        try:
+            achievement.admin_rating = int(rating)
+            achievement.save()
+            messages.success(request, 'Rating updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error updating rating: {str(e)}')
+        return redirect('achievement_list')
+    return render(request, 'achievements/rate_achievement.html', {'achievement': achievement})
+
+
+@login_required
+@admin_required
+def toggle_achievement_publish(request, achievement_id):
+    achievement = get_object_or_404(Achievement, id=achievement_id)
+    if request.method == 'POST':
+        achievement.is_published = not achievement.is_published
+        achievement.save()
+        status = 'published' if achievement.is_published else 'unpublished'
+        messages.success(request, f'Achievement {status} successfully.')
+        return redirect('achievement_list')
+    return redirect('achievement_list')
+
+
+@login_required
+@admin_required
+def delete_achievement(request, achievement_id):
+    achievement = get_object_or_404(Achievement, id=achievement_id)
+    if request.method == 'POST':
+        achievement.delete()
+        messages.success(request, 'Achievement deleted successfully.')
+        return redirect('achievement_list')
+    return render(request, 'achievements/delete_achievement.html', {'achievement': achievement})
