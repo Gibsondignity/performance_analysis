@@ -1,58 +1,68 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
+
+def generate_default_email():
+    """Generate a unique default email"""
+    return f"user_{timezone.now().timestamp()}@example.com"
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, employee_id=None, password=None, **extra_fields):
-        if not employee_id:
-            role = extra_fields.get('role')
-            if role:
-                employee_id = User.generate_employee_id(role)
-            else:
-                raise ValueError('Role must be provided if employee_id is not')
-        user = self.model(employee_id=employee_id, **extra_fields)
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Email is required')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+
+        # Generate employee_id if not provided
+        if not user.employee_id:
+            role = extra_fields.get('role', 'EMPLOYEE')
+            user.employee_id = User.generate_employee_id(role)
+
         user.set_password(password)
         user.save()
         return user
 
-    def create_superuser(self, employee_id=None, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(employee_id, password, **extra_fields)
-
-
+        extra_fields.setdefault('role', 'ADMIN')
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get('role') != 'ADMIN':
+            raise ValueError('Superuser must have role=ADMIN.')
+            
+        return self.create_user(email, password, **extra_fields)
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
-        ('HR', 'HR'),
-        ('HIGH_MANAGER', 'High Level Manager'),
-        ('MIDDLE_MANAGER', 'Middle Level Manager'),
-        ('MANAGER', 'Low Level Manager'),
+        ('ADMIN', 'Administrator'),
         ('EMPLOYEE', 'Employee'),
     ]
 
-    employee_id = models.CharField(max_length=20, unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    email = models.EmailField(unique=True)
+    employee_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='EMPLOYEE')
     branch = models.CharField(max_length=100, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'employee_id'
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['role']
 
     objects = CustomUserManager()
 
     def __str__(self):
-        return f"{self.employee_id} - {self.role}"
+        return f"{self.employee_id or 'No ID'} - {self.role}"
 
     @staticmethod
     def generate_employee_id(role):
         prefix = {
-            'HR': 'HR',
-            'HIGH_MANAGER': 'HM',
-            'MIDDLE_MANAGER': 'MM',
-            'MANAGER': 'MG',
-            'EMPLOYEE': 'EM'
-        }.get(role, 'EM')
+            'ADMIN': 'ADM',
+            'EMPLOYEE': 'EMP'
+        }.get(role, 'EMP')
 
         # Find the last employee_id with this prefix
         last_id = User.objects.filter(employee_id__startswith=prefix).order_by('-employee_id').first()
@@ -601,3 +611,106 @@ class EvaluationCriteria(models.Model):
 
     def __str__(self):
         return f"{self.role} - {self.criteria_name} ({self.weight}%)"
+
+class Achievement(models.Model):
+    """
+    Employee achievements for day, week, or month periods
+    """
+    PERIOD_CHOICES = [
+        ('DAY', 'Daily'),
+        ('WEEK', 'Weekly'),
+        ('MONTH', 'Monthly'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('SALES', 'Sales Achievement'),
+        ('PROJECT', 'Project Completion'),
+        ('CLIENT', 'Client Satisfaction'),
+        ('TEAM', 'Team Collaboration'),
+        ('INNOVATION', 'Innovation'),
+        ('QUALITY', 'Quality Improvement'),
+        ('LEADERSHIP', 'Leadership'),
+        ('TRAINING', 'Training/Development'),
+        ('OTHER', 'Other'),
+    ]
+
+    employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='achievements')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    period = models.CharField(max_length=10, choices=PERIOD_CHOICES)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    date_achieved = models.DateField()
+    evidence = models.TextField(blank=True, help_text="Optional evidence or supporting details")
+    
+    # Admin rating fields
+    admin_rating = models.IntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Admin rating from 1-10"
+    )
+    admin_feedback = models.TextField(blank=True, help_text="Admin feedback on this achievement")
+    rated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='rated_achievements',
+        help_text="Admin who rated this achievement"
+    )
+    rated_at = models.DateTimeField(null=True, blank=True)
+    
+    # Metadata
+    is_published = models.BooleanField(default=False, help_text="Whether this achievement is visible to others")
+    data_created = models.DateTimeField(auto_now_add=True)
+    data_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, related_name='created_achievements', on_delete=models.CASCADE, null=True, blank=True)
+    updated_by = models.ForeignKey(User, related_name='updated_achievements', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-date_achieved', '-data_created']
+        verbose_name = 'Achievement'
+        verbose_name_plural = 'Achievements'
+
+    def __str__(self):
+        return f"{self.employee.user.employee_id} - {self.title} ({self.period})"
+
+    def save(self, *args, **kwargs):
+        # Auto-set rated_at when rating is provided
+        if self.admin_rating is not None and not self.rated_at:
+            self.rated_at = timezone.now()
+        super().save(*args, **kwargs)
+
+class AchievementRating(models.Model):
+    """
+    Detailed rating system for achievements by admins
+    """
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE, related_name='ratings')
+    rated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='achievement_ratings')
+    rating_date = models.DateTimeField(auto_now_add=True)
+    
+    # Rating criteria (1-10 scale)
+    quality = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    impact = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    effort = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    innovation = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    
+    # Overall rating (calculated)
+    overall_rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    
+    # Feedback
+    feedback = models.TextField(blank=True)
+    suggestions = models.TextField(blank=True, help_text="Suggestions for improvement")
+    
+    # Metadata
+    data_created = models.DateTimeField(auto_now_add=True)
+    data_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('achievement', 'rated_by')
+        ordering = ['-rating_date']
+
+    def save(self, *args, **kwargs):
+        # Calculate overall rating as average of all criteria
+        if all([self.quality, self.impact, self.effort, self.innovation]):
+            self.overall_rating = (self.quality + self.impact + self.effort + self.innovation) / 4
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.achievement.title} - Rating: {self.overall_rating}/10"
