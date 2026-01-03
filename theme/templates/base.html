@@ -245,7 +245,7 @@
 
             <!-- Navigation -->
             <nav class="space-y-1 flex-1">
-                {% if user.role == "HR" %}
+                {% if user.role == "ADMIN" %}
                     <a href="{% url 'dashboard' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-tachometer-alt w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Dashboard</span>
@@ -263,13 +263,17 @@
                         <span x-show="!sidebarCollapsed">Training & Development</span>
                     </a>
                     <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-brain w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Sentiment Insights</span>
+                        <i class="fas fa-comments w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Peer Reviews</span>
                     </a>
-
+                    <a href="{% url 'attendance_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                        <i class="fas fa-clock w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Attendance</span>
+                    </a>
+                
                     <div class="section-divider" x-show="!sidebarCollapsed"></div>
                     <div class="section-title" x-show="!sidebarCollapsed">REPORTS & SETTINGS</div>
-
+                
                     <a href="{% url 'generate_performance_report' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-file-export w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Reports & Exports</span>
@@ -278,67 +282,7 @@
                         <i class="fas fa-cog w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Settings</span>
                     </a>
-
-                {% elif user.role == "HIGH_MANAGER" %}
-                    <a href="{% url 'dashboard' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Dashboard</span>
-                    </a>
-                    <a href="{% url 'evaluation_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-users w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Team Evaluations</span>
-                    </a>
-                    <a href="{% url 'analytics' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-chart-line w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Performance Trends</span>
-                    </a>
-                    <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-comments w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Feedback Analysis</span>
-                    </a>
-                    <a href="{% url 'attendance_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-clock w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Attendance</span>
-                    </a>
-
-                    <div class="section-divider" x-show="!sidebarCollapsed"></div>
-                    <div class="section-title" x-show="!sidebarCollapsed">REPORTS</div>
-
-                    <a href="{% url 'generate_performance_report' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-file-export w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Reports</span>
-                    </a>
-
-                {% elif user.role in "MANAGER,MIDDLE_MANAGER,HIGH_MANAGER" %}
-                    <a href="{% url 'dashboard' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Dashboard</span>
-                    </a>
-                    <a href="{% url 'evaluation_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-users w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Team Evaluations</span>
-                    </a>
-                    <a href="{% url 'analytics' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-chart-line w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Performance Trends</span>
-                    </a>
-                    <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-comments w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Feedback Analysis</span>
-                    </a>
-                    <a href="{% url 'attendance_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-clock w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Attendance</span>
-                    </a>
-
-                    <div class="section-divider" x-show="!sidebarCollapsed"></div>
-                    <div class="section-title" x-show="!sidebarCollapsed">REPORTS</div>
-
-                    <a href="{% url 'generate_performance_report' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-file-export w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Reports</span>
-                    </a>
-
+                
                 {% elif user.role == "EMPLOYEE" %}
                     <a href="{% url 'employee' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-tachometer-alt w-5 mr-3"></i>
@@ -364,10 +308,10 @@
                         <i class="fas fa-clock w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Attendance</span>
                     </a>
-
+                
                     <div class="section-divider" x-show="!sidebarCollapsed"></div>
                     <div class="section-title" x-show="!sidebarCollapsed">REPORTS</div>
-
+                
                     <a href="{% url 'generate_performance_report' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-file-export w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Reports</span>
@@ -379,7 +323,7 @@
             <div class="mt-auto pt-4 user-card glass-effect">
                 <div class="flex items-center p-3" :class="sidebarCollapsed ? 'justify-center' : ''">
                     <img class="h-10 w-10 rounded-full border-2 border-white border-opacity-30"
-                         src="https://ui-avatars.com/api/?name={{ user.employee_id }}&background=4f46e5&color=fff"
+                         src="https://ui-avatars.com/api/?name={{ user.email|default:user.employee_id|default:'User' }}&background=4f46e5&color=fff"
                          alt="Avatar">
                     <div class="ml-3" x-show="!sidebarCollapsed">
                         <p class="text-sm font-medium">{{ request.session.first_name }} {{ request.session.last_name }}</p>
@@ -404,7 +348,7 @@
                         <i class="fas" :class="sidebarCollapsed ? 'fa-arrow-right' : 'fa-arrow-left'"></i>
                     </button>
                     <div>
-                        <h1 class="text-xl font-semibold text-gray-800">Welcome back, {{ request.session.first_name|default:user.employee_id }}</h1>
+                        <h1 class="text-xl font-semibold text-gray-800">Welcome back, {{ request.session.first_name|default:user.email|default:'User' }}</h1>
                         <p class="text-sm text-gray-500">{{ user.get_role_display }} Dashboard</p>
                     </div>
                 </div>
@@ -425,11 +369,11 @@
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center space-x-3 hover:scale-105 transition focus:outline-none p-2 rounded-lg hover:bg-gray-100">
                             <img class="h-10 w-10 rounded-full border-2 border-gray-200"
-                                 src="https://ui-avatars.com/api/?name={{ user.employee_id }}&background=4f46e5&color=fff"
+                                 src="https://ui-avatars.com/api/?name={{ user.email|default:user.employee_id|default:'User' }}&background=4f46e5&color=fff"
                                  alt="Avatar">
                             <div class="hidden md:block text-left">
                                 <p class="text-sm font-medium text-gray-800">{{ request.session.first_name }} {{ request.session.last_name }}</p>
-                                <p class="text-xs text-gray-500">{{ user.employee_id }}</p>
+                                <p class="text-xs text-gray-500">{{ user.email }}</p>
                             </div>
                             <i class="fas fa-chevron-down text-gray-600 text-sm"></i>
                         </button>
