@@ -84,8 +84,12 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['password', 'role', 'branch', 'is_active']
+        fields = ['email', 'password', 'role', 'branch', 'is_active']
         widgets = {
+            'email': TextInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Email address (used as username)'
+            }),
             'role': Select(attrs={
                 'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
             }),
@@ -104,6 +108,92 @@ class UserForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class AchievementForm(forms.ModelForm):
+    """
+    Form for employees to submit achievements
+    """
+    class Meta:
+        model = Achievement
+        fields = ['title', 'description', 'period', 'category', 'date_achieved', 'evidence']
+        widgets = {
+            'title': TextInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'placeholder': 'Achievement title (e.g., "Exceeded Sales Target")'
+            }),
+            'description': Textarea(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 4,
+                'placeholder': 'Describe your achievement in detail...'
+            }),
+            'period': Select(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'category': Select(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'date_achieved': DateInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'type': 'date'
+            }),
+            'evidence': Textarea(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Optional: Provide evidence or supporting details...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make employee field hidden since it will be set automatically
+        if 'employee' in self.fields:
+            self.fields['employee'].widget = forms.HiddenInput()
+
+
+class AchievementRatingForm(forms.ModelForm):
+    """
+    Form for admins to rate achievements
+    """
+    class Meta:
+        model = AchievementRating
+        fields = ['quality', 'impact', 'effort', 'innovation', 'feedback', 'suggestions']
+        widgets = {
+            'quality': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 1,
+                'max': 10,
+                'placeholder': '1-10'
+            }),
+            'impact': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 1,
+                'max': 10,
+                'placeholder': '1-10'
+            }),
+            'effort': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 1,
+                'max': 10,
+                'placeholder': '1-10'
+            }),
+            'innovation': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 1,
+                'max': 10,
+                'placeholder': '1-10'
+            }),
+            'feedback': Textarea(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 4,
+                'placeholder': 'Provide detailed feedback...'
+            }),
+            'suggestions': Textarea(attrs={
+                'class': 'w-full px-3 py-2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Suggestions for improvement...'
+            }),
+        }
 
 
 class EmployeeProfileForm(forms.ModelForm):
