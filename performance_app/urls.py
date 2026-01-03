@@ -86,6 +86,13 @@ urlpatterns = [
     # COMPREHENSIVE REPORTING
     path('reports/generate/', views.generate_performance_report, name='generate_performance_report'),
 
+    # ACHIEVEMENTS
+    path('achievements/', views.achievement_list, name='achievement_list'),
+    path('achievements/add/', views.add_achievement, name='add_achievement'),
+    path('achievements/<int:achievement_id>/rate/', views.rate_achievement, name='rate_achievement'),
+    path('achievements/<int:achievement_id>/publish/', views.toggle_achievement_publish, name='toggle_achievement_publish'),
+    path('achievements/<int:achievement_id>/delete/', views.delete_achievement, name='delete_achievement'),
+
     # AI DEMONSTRATION
     path('ai/demo/', views.ai_demo_dashboard, name='ai_demo_dashboard'),
 
