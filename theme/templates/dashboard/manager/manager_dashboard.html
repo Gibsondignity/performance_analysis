@@ -37,6 +37,47 @@
         </div>
     </div>
 
+
+    <!-- Quick Actions for Managers -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-bolt mr-2 text-yellow-500"></i>Manager Actions
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{% url 'add_performance_record' %}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors group">
+                <i class="fas fa-plus-circle text-blue-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Add Performance</p>
+                    <p class="text-sm text-gray-600">Record team performance</p>
+                </div>
+            </a>
+
+            <a href="{% url 'add_evaluation' %}" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group">
+                <i class="fas fa-clipboard-check text-green-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Conduct Evaluation</p>
+                    <p class="text-sm text-gray-600">Evaluate team members</p>
+                </div>
+            </a>
+
+            <a href="{% url 'task_list' %}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group">
+                <i class="fas fa-tasks text-purple-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">Manage Tasks</p>
+                    <p class="text-sm text-gray-600">Assign and track tasks</p>
+                </div>
+            </a>
+
+            <a href="{% url 'ai_department_analysis' %}" class="flex items-center p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors group">
+                <i class="fas fa-robot text-indigo-600 mr-3 group-hover:scale-110 transition-transform"></i>
+                <div>
+                    <p class="font-semibold text-gray-900">AI Team Analysis</p>
+                    <p class="text-sm text-gray-600">Get AI insights</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
     <!-- Key Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -398,7 +439,7 @@
         </div>
     </div>
 
-    <!-- Quick Actions for Managers -->
+    {% comment %} <!-- Quick Actions for Managers -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <i class="fas fa-bolt mr-2 text-yellow-500"></i>Manager Actions
@@ -436,7 +477,7 @@
                 </div>
             </a>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <!-- Team Performance Trends -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
