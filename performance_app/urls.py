@@ -93,6 +93,14 @@ urlpatterns = [
     path('achievements/<int:achievement_id>/publish/', views.toggle_achievement_publish, name='toggle_achievement_publish'),
     path('achievements/<int:achievement_id>/delete/', views.delete_achievement, name='delete_achievement'),
 
+    # WORK LOGS
+    path('work-logs/', views.work_log_list, name='work_log_list'),
+    path('work-logs/add/', views.add_work_log, name='add_work_log'),
+    path('work-logs/<int:work_log_id>/submit/', views.submit_work_log, name='submit_work_log'),
+    path('work-logs/<int:work_log_id>/rate/', views.rate_work_log, name='rate_work_log'),
+    path('work-logs/<int:work_log_id>/edit/', views.edit_work_log, name='edit_work_log'),
+    path('work-logs/<int:work_log_id>/delete/', views.delete_work_log, name='delete_work_log'),
+
     # AI DEMONSTRATION
     path('ai/demo/', views.ai_demo_dashboard, name='ai_demo_dashboard'),
 
