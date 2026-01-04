@@ -1215,7 +1215,7 @@ def add_evaluation(request):
     Legacy evaluation view - redirects to appropriate specific evaluation type
     """
     evaluation_type = request.GET.get('type', 'manager')
-
+    print(f"Evaluation type requested: {evaluation_type}")  # Debug print
     if evaluation_type == 'self':
         return redirect('add_self_evaluation')
     elif evaluation_type == '360':
