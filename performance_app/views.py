@@ -2353,7 +2353,7 @@ def task_list(request):
         'selected_priority': priority,
     }
 
-    return render(request, 'dashboard/tasks/task_list.html', context)
+    return render(request, 'tasks/task_list.html', context)
 
 
 @login_required
@@ -2384,7 +2384,7 @@ def add_task(request):
             messages.error(request, f'❌ Error adding task: {str(e)}')
 
     employees = EmployeeProfile.objects.all()
-    return render(request, 'dashboard/tasks/add_task.html', {'employees': employees})
+    return render(request, 'tasks/add_task.html', {'employees': employees})
 
 
 @login_required
