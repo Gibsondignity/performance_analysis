@@ -29,7 +29,7 @@
             <h1 class="text-2xl font-bold text-gray-900">Training Management</h1>
             <p class="text-gray-600">Track employee training programs and skill development</p>
         </div>
-        {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' %}
+        {% if user.role in 'ADMIN' %}
         <a href="{% url 'add_training' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
             <i class="fas fa-plus mr-2"></i>Add Training
         </a>
@@ -184,7 +184,7 @@
             {% endif %}
 
             <!-- Action Buttons -->
-            {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' or training.employee.user == user %}
+            {% if user.role in 'ADMIN' or training.employee.user == user %}
             <div class="mt-4 pt-4 border-t border-gray-200">
                 {% if training.status != 'COMPLETED' and training.status != 'CANCELLED' %}
                 <form method="POST" action="{% url 'update_training_progress' training.id %}" class="space-y-3">
@@ -220,7 +220,7 @@
                     <i class="fas fa-graduation-cap text-4xl text-gray-400 mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No training records found</h3>
                     <p class="text-gray-500 mb-4">Start building employee skills with training programs.</p>
-                    {% if user.role in 'HR,HIGH_MANAGER,MANAGER,MIDDLE_MANAGER' %}
+                    {% if user.role in 'ADMIN' %}
                     <a href="{% url 'add_training' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
                         <i class="fas fa-plus mr-2"></i>Add Training
                     </a>
