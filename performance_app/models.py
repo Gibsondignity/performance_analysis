@@ -714,3 +714,91 @@ class AchievementRating(models.Model):
 
     def __str__(self):
         return f"{self.achievement.title} - Rating: {self.overall_rating}/10"
+
+
+class WorkLog(models.Model):
+    """
+    Employee work logs for tracking hours worked and activities during day/week/month periods
+    """
+    PERIOD_CHOICES = [
+        ('DAY', 'Daily'),
+        ('WEEK', 'Weekly'),
+        ('MONTH', 'Monthly'),
+    ]
+
+    employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='work_logs')
+    date = models.DateField(help_text="Date of the work log")
+    period = models.CharField(max_length=10, choices=PERIOD_CHOICES, default='DAY')
+    hours_worked = models.DecimalField(
+        max_digits=5, decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(24)],
+        help_text="Total hours worked during this period"
+    )
+    work_description = models.TextField(
+        help_text="Description of work done during this period"
+    )
+    achievements = models.TextField(
+        blank=True,
+        help_text="Key achievements or tasks completed"
+    )
+    challenges = models.TextField(
+        blank=True,
+        help_text="Challenges faced or obstacles encountered"
+    )
+    next_steps = models.TextField(
+        blank=True,
+        help_text="Plans for next period or follow-up actions"
+    )
+
+    # Admin rating fields
+    admin_rating = models.IntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Admin rating from 1-10 based on work done"
+    )
+    admin_feedback = models.TextField(
+        blank=True,
+        help_text="Admin feedback on the work log"
+    )
+    rated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='rated_work_logs',
+        help_text="Admin who rated this work log"
+    )
+    rated_at = models.DateTimeField(null=True, blank=True)
+
+    # Status
+    is_submitted = models.BooleanField(default=False, help_text="Whether the work log has been submitted")
+    is_reviewed = models.BooleanField(default=False, help_text="Whether the work log has been reviewed by admin")
+
+    # Metadata
+    data_created = models.DateTimeField(auto_now_add=True)
+    data_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, related_name='created_work_logs', on_delete=models.CASCADE, null=True, blank=True)
+    updated_by = models.ForeignKey(User, related_name='updated_work_logs', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-date', '-data_created']
+        verbose_name = 'Work Log'
+        verbose_name_plural = 'Work Logs'
+        unique_together = ('employee', 'date', 'period')  # Prevent duplicate logs for same period
+
+    def __str__(self):
+        return f"{self.employee.user.employee_id} - {self.period} Work Log ({self.date})"
+
+    def save(self, *args, **kwargs):
+        # Auto-set rated_at when rating is provided
+        if self.admin_rating is not None and not self.rated_at:
+            self.rated_at = timezone.now()
+            self.is_reviewed = True
+        super().save(*args, **kwargs)
+
+    @property
+    def rating_status(self):
+        """Get rating status for display"""
+        if self.admin_rating is not None:
+            return f"Reviewed ({self.admin_rating}/10)"
+        elif self.is_submitted:
+            return "Submitted - Pending Review"
+        else:
+            return "Draft"
