@@ -14,8 +14,8 @@ from collections import defaultdict
 from django.utils.timezone import now
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import UserForm, EmployeeProfileForm, EditUserForm, PerformanceRecordForm, EvaluationForm
-from .models import Evaluation, Attendance, Task, PeerReview, Training, EvaluationCriteria
+from .forms import UserForm, EmployeeProfileForm, EditUserForm, PerformanceRecordForm, EvaluationForm, WorkLogForm, WorkLogRatingForm
+from .models import Evaluation, Attendance, Task, PeerReview, Training, EvaluationCriteria, WorkLog
 from ai_engine.inference_service import AIService
 from django.contrib import messages
 from django.db import IntegrityError
@@ -279,6 +279,29 @@ def analytical_dashboard(request):
         'recent_achievements': recent_achievements
     }
 
+    # Work Log Analytics
+    current_month = timezone.now().replace(day=1)
+    work_logs = WorkLog.objects.filter(
+        employee__in=team_members,
+        date__gte=current_month
+    ).select_related('employee')
+
+    total_hours = work_logs.aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+    unique_days = work_logs.values('date').distinct().count()
+    avg_hours_day = total_hours / unique_days if unique_days > 0 else 0
+    total_logs = work_logs.count()
+    period_stats = work_logs.values('period').annotate(count=Count('id')).order_by('-count')
+    most_common_category = period_stats[0]['period'] if period_stats else 'N/A'
+    avg_rating = work_logs.filter(admin_rating__isnull=False).aggregate(Avg('admin_rating'))['admin_rating__avg'] or 0
+
+    work_analytics = {
+        'total_hours': round(total_hours, 2),
+        'avg_hours_per_day': round(avg_hours_day, 2),
+        'most_common_category': most_common_category,
+        'total_logs': total_logs,
+        'avg_rating': round(avg_rating, 1),
+    }
+
     # Calculate team trend data for the last 12 months
     from django.db.models.functions import ExtractMonth, ExtractYear
 
@@ -346,6 +369,7 @@ def analytical_dashboard(request):
         'sentiment_data': sentiment_counts,
         'attendance_heatmap': attendance_heatmap,
         'ai_insights': ai_insights,
+        'work_analytics': work_analytics,
         'team_size': team_members.count(),
         'total_evaluations': total_evaluations,
         'trend_labels': trend_labels,
@@ -1551,10 +1575,33 @@ def employee(request):
         'total': monthly_attendance.count()
     }
 
+    # Work Log Analytics for employee
+    work_logs = WorkLog.objects.filter(
+        employee=employee_profile,
+        date__gte=current_month
+    )
+
+    total_hours = work_logs.aggregate(Sum('hours_worked'))['hours_worked__sum'] or 0
+    unique_days = work_logs.values('date').distinct().count()
+    avg_hours_day = total_hours / unique_days if unique_days > 0 else 0
+    total_logs = work_logs.count()
+    period_stats = work_logs.values('period').annotate(count=Count('id')).order_by('-count')
+    most_common_category = period_stats[0]['period'] if period_stats else 'N/A'
+    avg_rating = work_logs.filter(admin_rating__isnull=False).aggregate(Avg('admin_rating'))['admin_rating__avg'] or 0
+
+    work_analytics = {
+        'total_hours': round(total_hours, 2),
+        'avg_hours_per_day': round(avg_hours_day, 2),
+        'most_common_category': most_common_category,
+        'total_logs': total_logs,
+        'avg_rating': round(avg_rating, 1),
+    }
+
     context = {
         'employee': employee_profile,
         'kpi_data': kpi_data,
         'attendance_data': attendance_data,
+        'work_analytics': work_analytics,
         'performance_trend': performance_trend,
         'feedback_data': feedback_data,
         'training_progress': training_progress,
@@ -2783,7 +2830,7 @@ def attendance_analytics(request):
 
     # Daily attendance trend (last 30 days)
     from django.db.models.functions import TruncDate
-    from django.db.models import Count
+    from django.db.models import Count, Sum, Avg
 
     daily_trend = attendance_records.filter(
         date__gte=timezone.now().date() - timedelta(days=30)
@@ -3890,3 +3937,180 @@ def delete_achievement(request, achievement_id):
         messages.success(request, 'Achievement deleted successfully.')
         return redirect('achievement_list')
     return render(request, 'achievements/delete_achievement.html', {'achievement': achievement})
+
+
+# WORK LOG VIEWS
+@login_required
+def work_log_list(request):
+    """
+    List work logs with filtering
+    """
+    user = request.user
+    work_logs = WorkLog.objects.select_related('employee__user').order_by('-date')
+
+    # Role-based filtering
+    if user.role == 'EMPLOYEE':
+        work_logs = work_logs.filter(employee__user=user)
+    elif user.role == 'ADMIN':
+        # Admin can see all work logs
+        pass
+
+    # Filters
+    employee_id = request.GET.get('employee')
+    period = request.GET.get('period')
+    status = request.GET.get('status')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if employee_id:
+        work_logs = work_logs.filter(employee_id=employee_id)
+    if period:
+        work_logs = work_logs.filter(period=period)
+    if status:
+        if status == 'submitted':
+            work_logs = work_logs.filter(is_submitted=True)
+        elif status == 'reviewed':
+            work_logs = work_logs.filter(is_reviewed=True)
+        elif status == 'pending':
+            work_logs = work_logs.filter(is_submitted=True, is_reviewed=False)
+    if start_date:
+        work_logs = work_logs.filter(date__gte=start_date)
+    if end_date:
+        work_logs = work_logs.filter(date__lte=end_date)
+
+    employees = EmployeeProfile.objects.all() if user.role == 'ADMIN' else None
+
+    context = {
+        'work_logs': work_logs,
+        'employees': employees,
+        'selected_employee': employee_id,
+        'selected_period': period,
+        'selected_status': status,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+
+    return render(request, 'work_logs/work_log_list.html', context)
+
+
+@login_required
+def add_work_log(request):
+    """
+    Add new work log
+    """
+    try:
+        employee_profile = EmployeeProfile.objects.get(user=request.user)
+    except EmployeeProfile.DoesNotExist:
+        messages.error(request, '❌ Your employee profile is not set up. Please contact HR.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = WorkLogForm(request.POST)
+        if form.is_valid():
+            work_log = form.save(commit=False)
+            work_log.employee = employee_profile
+            work_log.created_by = request.user
+            work_log.save()
+            messages.success(request, '✅ Work log saved successfully.')
+            return redirect('work_log_list')
+        else:
+            messages.error(request, '❌ Please correct the errors below.')
+    else:
+        form = WorkLogForm()
+
+    return render(request, 'work_logs/add_work_log.html', {'form': form})
+
+
+@login_required
+def submit_work_log(request, work_log_id):
+    """
+    Submit a work log for review
+    """
+    work_log = get_object_or_404(WorkLog, id=work_log_id)
+
+    # Check permissions
+    if work_log.employee.user != request.user:
+        messages.error(request, '❌ You can only submit your own work logs.')
+        return redirect('work_log_list')
+
+    if request.method == 'POST':
+        work_log.is_submitted = True
+        work_log.save()
+        messages.success(request, '✅ Work log submitted for review.')
+        return redirect('work_log_list')
+
+    return redirect('work_log_list')
+
+
+@login_required
+@admin_required
+def rate_work_log(request, work_log_id):
+    """
+    Rate and provide feedback on a work log
+    """
+    work_log = get_object_or_404(WorkLog, id=work_log_id)
+
+    if request.method == 'POST':
+        form = WorkLogRatingForm(request.POST, instance=work_log)
+        if form.is_valid():
+            work_log = form.save(commit=False)
+            work_log.rated_by = request.user
+            work_log.updated_by = request.user
+            work_log.save()
+            messages.success(request, '✅ Work log rated successfully.')
+            return redirect('work_log_list')
+        else:
+            messages.error(request, '❌ Please correct the errors below.')
+    else:
+        form = WorkLogRatingForm(instance=work_log)
+
+    return render(request, 'work_logs/rate_work_log.html', {'form': form, 'work_log': work_log})
+
+
+@login_required
+def edit_work_log(request, work_log_id):
+    """
+    Edit an existing work log (only if not submitted)
+    """
+    work_log = get_object_or_404(WorkLog, id=work_log_id)
+
+    # Check permissions
+    if work_log.employee.user != request.user:
+        messages.error(request, '❌ You can only edit your own work logs.')
+        return redirect('work_log_list')
+
+    # Don't allow editing submitted work logs
+    if work_log.is_submitted:
+        messages.error(request, '❌ Cannot edit submitted work logs.')
+        return redirect('work_log_list')
+
+    if request.method == 'POST':
+        form = WorkLogForm(request.POST, instance=work_log)
+        if form.is_valid():
+            work_log = form.save(commit=False)
+            work_log.updated_by = request.user
+            work_log.save()
+            messages.success(request, '✅ Work log updated successfully.')
+            return redirect('work_log_list')
+        else:
+            messages.error(request, '❌ Please correct the errors below.')
+    else:
+        form = WorkLogForm(instance=work_log)
+
+    return render(request, 'work_logs/edit_work_log.html', {'form': form, 'work_log': work_log})
+
+
+@login_required
+@admin_required
+def delete_work_log(request, work_log_id):
+    """
+    Delete a work log
+    """
+    work_log = get_object_or_404(WorkLog, id=work_log_id)
+
+    if request.method == 'POST':
+        work_log.delete()
+        messages.success(request, '🗑️ Work log deleted successfully.')
+        return redirect('work_log_list')
+
+    return render(request, 'work_logs/delete_work_log.html', {'work_log': work_log})
