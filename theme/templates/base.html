@@ -258,10 +258,10 @@
                         <i class="fas fa-users w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Employee Records</span>
                     </a>
-                    <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                    {% comment %} <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-graduation-cap w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Training & Development</span>
-                    </a>
+                    </a> {% endcomment %}
                     <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-comments w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Peer Reviews</span>
@@ -270,7 +270,11 @@
                         <i class="fas fa-clock w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Attendance</span>
                     </a>
-                
+                    <a href="{% url 'work_log_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                        <i class="fas fa-book w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Work Logs</span>
+                    </a>
+
                     <div class="section-divider" x-show="!sidebarCollapsed"></div>
                     <div class="section-title" x-show="!sidebarCollapsed">REPORTS & SETTINGS</div>
                 
@@ -296,10 +300,10 @@
                         <i class="fas fa-bullseye w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Goals & KPIs</span>
                     </a>
-                    <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                    {% comment %} <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-graduation-cap w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Training</span>
-                    </a>
+                    </a> {% endcomment %}
                     <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-comments w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Feedback</span>
@@ -308,7 +312,11 @@
                         <i class="fas fa-clock w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Attendance</span>
                     </a>
-                
+                    <a href="{% url 'work_log_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                        <i class="fas fa-book w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Work Logs</span>
+                    </a>
+
                     <div class="section-divider" x-show="!sidebarCollapsed"></div>
                     <div class="section-title" x-show="!sidebarCollapsed">REPORTS</div>
                 
