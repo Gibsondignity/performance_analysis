@@ -473,3 +473,76 @@ class EvaluationForm(forms.ModelForm):
         # Set current user as default evaluator if not set
         if 'evaluator' in self.fields and not self.instance.pk:
             self.fields['evaluator'].initial = kwargs.get('initial', {}).get('evaluator')
+
+
+class WorkLogForm(forms.ModelForm):
+    """
+    Form for employees to submit work logs
+    """
+    class Meta:
+        model = WorkLog
+        fields = ['date', 'period', 'hours_worked', 'work_description', 'achievements', 'challenges', 'next_steps']
+        widgets = {
+            'date': DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'type': 'date'
+            }),
+            'period': Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            }),
+            'hours_worked': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 0,
+                'max': 24,
+                'step': 0.5,
+                'placeholder': 'e.g., 8.5'
+            }),
+            'work_description': Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 6,
+                'placeholder': 'Describe the work you did during this period...'
+            }),
+            'achievements': Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 4,
+                'placeholder': 'Key achievements or tasks completed...'
+            }),
+            'challenges': Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Challenges faced or obstacles encountered (optional)...'
+            }),
+            'next_steps': Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 3,
+                'placeholder': 'Plans for next period or follow-up actions (optional)...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make employee field hidden since it will be set automatically
+        if 'employee' in self.fields:
+            self.fields['employee'].widget = forms.HiddenInput()
+
+
+class WorkLogRatingForm(forms.ModelForm):
+    """
+    Form for admins to rate and provide feedback on work logs
+    """
+    class Meta:
+        model = WorkLog
+        fields = ['admin_rating', 'admin_feedback']
+        widgets = {
+            'admin_rating': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'min': 1,
+                'max': 10,
+                'placeholder': 'Rate from 1-10'
+            }),
+            'admin_feedback': Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'rows': 6,
+                'placeholder': 'Provide detailed feedback on the work done...'
+            }),
+        }
