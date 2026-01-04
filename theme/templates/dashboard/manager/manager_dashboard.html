@@ -292,6 +292,63 @@
                                     <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
                                         <div class="bg-blue-600 h-2 rounded-full" style="width: {{ attendance.attendance_rate }}%"></div>
                                     </div>
+                                
+                                    <!-- Work Log Analytics -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                            <div class="flex items-center">
+                                                <div class="p-3 bg-indigo-100 rounded-lg">
+                                                    <i class="fas fa-clock text-indigo-600 text-xl"></i>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-2xl font-bold text-gray-900">{{ work_analytics.total_hours }}</div>
+                                                    <div class="text-sm text-gray-600">Total Hours</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                            <div class="flex items-center">
+                                                <div class="p-3 bg-blue-100 rounded-lg">
+                                                    <i class="fas fa-calendar-day text-blue-600 text-xl"></i>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-2xl font-bold text-gray-900">{{ work_analytics.avg_hours_per_day }}</div>
+                                                    <div class="text-sm text-gray-600">Avg/Day</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                            <div class="flex items-center">
+                                                <div class="p-3 bg-green-100 rounded-lg">
+                                                    <i class="fas fa-file-alt text-green-600 text-xl"></i>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-2xl font-bold text-gray-900">{{ work_analytics.total_logs }}</div>
+                                                    <div class="text-sm text-gray-600">Total Logs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                            <div class="flex items-center">
+                                                <div class="p-3 bg-purple-100 rounded-lg">
+                                                    <i class="fas fa-star text-purple-600 text-xl"></i>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-2xl font-bold text-gray-900">{{ work_analytics.avg_rating }}</div>
+                                                    <div class="text-sm text-gray-600">Avg Rating</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Most Common Work Category</h4>
+                                        <p class="text-2xl font-bold text-blue-600">{{ work_analytics.most_common_category }}</p>
+                                        <p class="text-sm text-gray-600 mt-1">Based on work log periods this month</p>
+                                    </div>
                                     <span class="text-sm font-medium text-gray-900">{{ attendance.attendance_rate }}%</span>
                                 </div>
                             {% else %}
