@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rate Work Log{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <a href="{% url 'work_log_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">Work Logs</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">Rate Work Log</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Rate Work Log</h1>
+        <p class="text-gray-600">Review and rate the employee's work log</p>
+    </div>
+
+    <!-- Work Log Summary -->
+    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Work Log Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm text-gray-600">Employee</p>
+                <p class="font-medium">{{ work_log.employee.first_name }} {{ work_log.employee.last_name }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Period</p>
+                <p class="font-medium">{{ work_log.get_period_display }} - {{ work_log.date|date:"M d, Y" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Hours Worked</p>
+                <p class="font-medium">{{ work_log.hours_worked }} hours</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Submitted</p>
+                <p class="font-medium">{{ work_log.data_created|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+
+        {% if work_log.work_description %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2">Work Description</p>
+            <div class="bg-white p-3 rounded border">{{ work_log.work_description }}</div>
+        </div>
+        {% endif %}
+
+        {% if work_log.achievements %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2">Key Achievements</p>
+            <div class="bg-white p-3 rounded border">{{ work_log.achievements }}</div>
+        </div>
+        {% endif %}
+
+        {% if work_log.challenges %}
+        <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-2">Challenges Faced</p>
+            <div class="bg-white p-3 rounded border">{{ work_log.challenges }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Rating Form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Rating -->
+            <div>
+                <label for="{{ form.admin_rating.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-star mr-2 text-yellow-500"></i>Overall Rating (1-10) *
+                </label>
+                <div class="flex items-center space-x-2">
+                    {{ form.admin_rating }}
+                    <span class="text-sm text-gray-500">/10</span>
+                </div>
+                {% if form.admin_rating.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.admin_rating.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Rate the quality and quantity of work performed</p>
+            </div>
+
+            <!-- Feedback -->
+            <div>
+                <label for="{{ form.admin_feedback.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-comment mr-2 text-blue-500"></i>Detailed Feedback *
+                </label>
+                {{ form.admin_feedback }}
+                {% if form.admin_feedback.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.admin_feedback.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Provide constructive feedback on the work performed</p>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{% url 'work_log_list' %}"
+                   class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-black font-medium rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-black font-medium rounded-lg transition-colors">
+                    <i class="fas fa-check mr-2"></i>Submit Rating
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Star rating visualization
+    $('#{{ form.admin_rating.id_for_label }}').on('input change', function() {
+        const rating = $(this).val();
+        let starsHtml = '';
+        for (let i = 1; i <= 10; i++) {
+            if (i <= rating) {
+                starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+            } else {
+                starsHtml += '<i class="far fa-star text-gray-300"></i>';
+            }
+        }
+        $('#star-display').html(starsHtml);
+    });
+
+    // Initialize on page load
+    $('#{{ form.admin_rating.id_for_label }}').trigger('change');
+});
+</script>
+{% endblock %}
+{% endblock %}

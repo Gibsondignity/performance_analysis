@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Work Log{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <a href="{% url 'work_log_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">Work Logs</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-gray-500">Edit Work Log</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Edit Work Log</h1>
+        <p class="text-gray-600">Update your work log details</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Date -->
+                <div>
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>Date *
+                    </label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Period -->
+                <div>
+                    <label for="{{ form.period.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-2 text-green-500"></i>Period *
+                    </label>
+                    {{ form.period }}
+                    {% if form.period.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.period.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Hours Worked -->
+                <div>
+                    <label for="{{ form.hours_worked.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-2 text-purple-500"></i>Hours Worked *
+                    </label>
+                    {{ form.hours_worked }}
+                    {% if form.hours_worked.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.hours_worked.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Work Description -->
+            <div>
+                <label for="{{ form.work_description.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-2 text-blue-500"></i>Work Description *
+                </label>
+                {{ form.work_description }}
+                {% if form.work_description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.work_description.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Describe the work you performed during this period</p>
+            </div>
+
+            <!-- Achievements -->
+            <div>
+                <label for="{{ form.achievements.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-trophy mr-2 text-yellow-500"></i>Key Achievements
+                </label>
+                {{ form.achievements }}
+                {% if form.achievements.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.achievements.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Highlight your accomplishments and completed tasks</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Challenges -->
+                <div>
+                    <label for="{{ form.challenges.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-2 text-orange-500"></i>Challenges Faced
+                    </label>
+                    {{ form.challenges }}
+                    {% if form.challenges.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.challenges.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Optional: Describe any obstacles encountered</p>
+                </div>
+
+                <!-- Next Steps -->
+                <div>
+                    <label for="{{ form.next_steps.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-forward mr-2 text-indigo-500"></i>Next Steps/Plans
+                    </label>
+                    {{ form.next_steps }}
+                    {% if form.next_steps.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.next_steps.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Optional: Plans for the next period</p>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{% url 'work_log_list' %}"
+                   class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-black font-medium rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-black font-medium rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>Update Work Log
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Status Notice -->
+    {% if work_log.is_submitted %}
+    <div class="mt-6 bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+        <div class="flex items-center">
+            <i class="fas fa-info-circle text-yellow-500 mr-3"></i>
+            <div>
+                <p class="text-sm text-yellow-800">
+                    <strong>Note:</strong> This work log has been submitted for review. You can still make changes, but you'll need to submit it again for re-review.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

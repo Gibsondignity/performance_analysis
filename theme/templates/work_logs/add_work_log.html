@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Work Log{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <a href="{% url 'work_log_list' %}" class="text-sm font-medium text-gray-700 hover:text-blue-600">Work Logs</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                <span class="text-sm font-medium text-white">Add Work Log</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-white">Add Work Log</h1>
+        <p class="text-gray-600">Log your work hours and activities for the period</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Date -->
+                <div>
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>Date *
+                    </label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Period -->
+                <div>
+                    <label for="{{ form.period.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-2 text-green-500"></i>Period *
+                    </label>
+                    {{ form.period }}
+                    {% if form.period.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.period.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Hours Worked -->
+                <div>
+                    <label for="{{ form.hours_worked.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-2 text-purple-500"></i>Hours Worked *
+                    </label>
+                    {{ form.hours_worked }}
+                    {% if form.hours_worked.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.hours_worked.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Work Description -->
+            <div>
+                <label for="{{ form.work_description.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-2 text-blue-500"></i>Work Description *
+                </label>
+                {{ form.work_description }}
+                {% if form.work_description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.work_description.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Describe the work you performed during this period</p>
+            </div>
+
+            <!-- Achievements -->
+            <div>
+                <label for="{{ form.achievements.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-trophy mr-2 text-yellow-500"></i>Key Achievements
+                </label>
+                {{ form.achievements }}
+                {% if form.achievements.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.achievements.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Highlight your accomplishments and completed tasks</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Challenges -->
+                <div>
+                    <label for="{{ form.challenges.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-exclamation-triangle mr-2 text-orange-500"></i>Challenges Faced
+                    </label>
+                    {{ form.challenges }}
+                    {% if form.challenges.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.challenges.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Optional: Describe any obstacles encountered</p>
+                </div>
+
+                <!-- Next Steps -->
+                <div>
+                    <label for="{{ form.next_steps.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-forward mr-2 text-indigo-500"></i>Next Steps/Plans
+                    </label>
+                    {{ form.next_steps }}
+                    {% if form.next_steps.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.next_steps.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Optional: Plans for the next period</p>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{% url 'work_log_list' %}"
+                   class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+                <button type="submit"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>Save Work Log
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-8 bg-blue-50 rounded-xl p-6 border border-blue-200">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-lightbulb text-blue-500 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">Creating Effective Work Logs</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Be specific about the work performed and time spent</li>
+                        <li>Highlight key achievements and completed tasks</li>
+                        <li>Mention any challenges and how they were addressed</li>
+                        <li>Include plans for future work or follow-up actions</li>
+                        <li>Use clear, professional language in your descriptions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Set default date to today
+    if (!document.getElementById('{{ form.date.id_for_label }}').value) {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('{{ form.date.id_for_label }}').value = today;
+    }
+
+    // Auto-calculate period based on date selection
+    $('#{{ form.date.id_for_label }}').on('change', function() {
+        const selectedDate = new Date($(this).val());
+        const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+        const dayOfMonth = selectedDate.getDate();
+
+        // If it's Friday, suggest weekly log
+        if (dayOfWeek === 5) {
+            $('#{{ form.period.id_for_label }}').val('WEEK');
+        }
+        // If it's the last day of month, suggest monthly log
+        else if (dayOfMonth >= 28) {
+            const nextDay = new Date(selectedDate);
+            nextDay.setDate(dayOfMonth + 1);
+            if (nextDay.getDate() === 1) { // Next day is first of month
+                $('#{{ form.period.id_for_label }}').val('MONTH');
+            }
+        }
+        // Otherwise default to daily
+        else {
+            $('#{{ form.period.id_for_label }}').val('DAY');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
