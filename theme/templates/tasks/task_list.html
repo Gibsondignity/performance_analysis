@@ -30,7 +30,7 @@
             <p class="text-gray-600">Track and manage employee tasks and project progress</p>
         </div>
         {% if user.role in 'ADMIN' %}
-        <a href="{% url 'add_task' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-black font-medium rounded-lg transition-colors">
+        <a href="{% url 'add_task' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
             <i class="fas fa-plus mr-2"></i>Add New Task
         </a>
         {% endif %}
@@ -76,10 +76,10 @@
             </div>
 
             <div class="md:col-span-4 flex gap-2">
-                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-black font-medium rounded-lg transition-colors">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
                     <i class="fas fa-search mr-2"></i>Filter
                 </button>
-                <a href="{% url 'task_list' %}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-black font-medium rounded-lg transition-colors">
+                <a href="{% url 'task_list' %}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors">
                     <i class="fas fa-times mr-2"></i>Clear
                 </a>
             </div>
@@ -214,7 +214,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
                     <p class="text-gray-500 mb-4">Get started by creating your first task.</p>
                     {% if user.role in 'ADMIN' %}
-                    <a href="{% url 'add_task' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-black font-medium rounded-lg transition-colors">
+                    <a href="{% url 'add_task' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
                         <i class="fas fa-plus mr-2"></i>Add New Task
                     </a>
                     {% endif %}
