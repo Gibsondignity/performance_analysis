@@ -6,6 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.forms.widgets import TextInput, PasswordInput, Select, DateInput, CheckboxInput, NumberInput, Textarea
+from django.contrib.auth.forms import PasswordChangeForm
 
 from .models import *
 
@@ -546,3 +547,54 @@ class WorkLogRatingForm(forms.ModelForm):
                 'placeholder': 'Provide detailed feedback on the work done...'
             }),
         }
+
+
+class AdminPasswordResetForm(forms.Form):
+    email = forms.EmailField(
+        label='User Email',
+        widget=forms.EmailInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Enter user email'
+        })
+    )
+    password1 = forms.CharField(
+        label='New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Enter new password (min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char)'
+        }),
+        validators=[validate_strong_password]
+    )
+    password2 = forms.CharField(
+        label='Confirm New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Confirm new password'
+        })
+    )
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords do not match")
+        return password2
+
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Enter new password (min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char)'
+        }),
+        validators=[validate_strong_password]
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+            'placeholder': 'Confirm new password'
+        })
+    )
