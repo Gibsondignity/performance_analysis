@@ -14,7 +14,7 @@ from collections import defaultdict
 from django.utils.timezone import now
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import UserForm, EmployeeProfileForm, EditUserForm, PerformanceRecordForm, EvaluationForm, WorkLogForm, WorkLogRatingForm
+from .forms import UserForm, EmployeeProfileForm, EditUserForm, PerformanceRecordForm, EvaluationForm, WorkLogForm, WorkLogRatingForm, AdminPasswordResetForm
 from .models import Evaluation, Attendance, Task, PeerReview, Training, EvaluationCriteria, WorkLog
 from ai_engine.inference_service import AIService
 from django.contrib import messages
@@ -25,6 +25,7 @@ from datetime import datetime
 from django.utils.timezone import localtime
 import csv
 from django.db.models import Q
+
 
 
 # ROLE-BASED ACCESS CONTROL DECORATORS
@@ -4114,3 +4115,32 @@ def delete_work_log(request, work_log_id):
         return redirect('work_log_list')
 
     return render(request, 'work_logs/delete_work_log.html', {'work_log': work_log})
+
+
+
+
+# ADMIN PASSWORD RESET
+
+def admin_password_reset(request):
+    if request.user.role != 'ADMIN':
+        messages.error(request, '❌ Only administrators can reset user passwords.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = AdminPasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            new_password = form.cleaned_data['password1']
+
+            try:
+                user = User.objects.get(email=email)
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, f"Password for {email} has been reset successfully.")
+                return redirect('admin_password_reset')  # or redirect to user list, dashboard, etc.
+            except User.DoesNotExist:
+                messages.error(request, "No user found with that email address.")
+    else:
+        form = AdminPasswordResetForm()
+
+    return render(request, 'admin_password_reset.html', {'form': form})
