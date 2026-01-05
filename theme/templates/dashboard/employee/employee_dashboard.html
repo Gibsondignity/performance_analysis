@@ -102,7 +102,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        {% comment %} <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div class="flex items-center">
                 <div class="p-2 bg-orange-100 rounded-lg">
                     <i class="fas fa-graduation-cap text-orange-600 text-lg"></i>
@@ -112,7 +112,7 @@
                     <div class="text-xs text-gray-600">Active Trainings</div>
                 </div>
             </div>
-        </div>
+        </div> {% endcomment %}
     </div>
 
     <!-- KPI Scores Section -->
@@ -222,7 +222,7 @@
         </div>
 
         <!-- Training Progress -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {% comment %} <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <i class="fas fa-graduation-cap mr-2 text-teal-500"></i>Training Progress
             </h3>
@@ -272,7 +272,7 @@
                 </div>
                 {% endfor %}
             </div>
-        </div>
+        </div> {% endcomment %}
     </div>
 
     <!-- Goals Summary -->
@@ -405,13 +405,13 @@
                         <p class="text-sm text-gray-600">Check your assigned tasks</p>
                     </div>
                 </a>
-                <a href="{% url 'training_list' %}" class="flex items-center p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                {% comment %} <a href="{% url 'training_list' %}" class="flex items-center p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
                     <i class="fas fa-graduation-cap text-purple-600 mr-3"></i>
                     <div>
                         <p class="font-medium text-gray-900">Training Programs</p>
                         <p class="text-sm text-gray-600">Explore available courses</p>
                     </div>
-                </a>
+                </a> {% endcomment %}
                 <a href="{% if employee.id %}{% url 'ai_employee_analysis' employee.id %}{% else %}#{% endif %}" class="flex items-center p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
                     <i class="fas fa-robot text-indigo-600 mr-3"></i>
                     <div>
