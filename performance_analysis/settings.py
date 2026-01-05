@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-m82dn#*=%h=-qn61v15y2kd2n=ypd)=2$8gy)of#&8y0rn$$!-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 TAILWIND_APP_NAME = 'theme'
 AUTH_USER_MODEL = 'performance_app.User'
 LOGOUT_REDIRECT_URL = 'login'
