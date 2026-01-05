@@ -1,5 +1,7 @@
 from django.urls import path
 from .import views
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
+from .forms import CustomPasswordChangeForm
 
 
 urlpatterns = [
@@ -109,4 +111,21 @@ urlpatterns = [
 
     # ENHANCED REPORTS & EXPORTS
     path('reports/organization/', views.export_organization_report, name='export_organization_report'),
+# PASSWORD RESET URLS
+path('reset-user-password/', views.admin_password_reset, name='admin_password_reset'),
+path('password_change/done/',
+     PasswordChangeDoneView.as_view(template_name='password_change_done.html'),
+     name='password_change_done'),
+
+
+
+    
+
+    path('password_change/', 
+        PasswordChangeView.as_view(
+            template_name='password_change.html',
+            form_class=CustomPasswordChangeForm,
+            success_url='/password_change/done/'
+        ), 
+        name='password_change'),
 ]
