@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}AI-Powered Employee Performance System{% endblock %}</title>
+    <title>{% block title %}Employee Performance System{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Advanced AI-driven employee performance management system">
     {% tailwind_css %}
@@ -266,7 +266,7 @@
                         <span x-show="!sidebarCollapsed">Task</span>
                     </a>
 
-                    <a href="{% url 'evaluation_criteria_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                    {% comment %} <a href="{% url 'evaluation_criteria_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-clipboard-list w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Evaluation Management</span>
                     </a>
@@ -274,7 +274,7 @@
                     <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-graduation-cap w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Training & Development</span>
-                    </a> 
+                    </a>  {% endcomment %}
                     <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-comments w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Peer Reviews</span>
@@ -292,6 +292,12 @@
                         <i class="fas fa-file-export w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Reports & Exports</span>
                     </a>
+
+                    <a href="{% url 'admin_password_reset' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                        <i class="fas fa-key w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Reset User Password</span>
+                    </a>
+
                     <a href="#" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-cog w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Settings</span>
@@ -312,7 +318,7 @@
                         <span x-show="!sidebarCollapsed">Task</span>
                     </a>
 
-                    <a href="{% url 'my_evaluation_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                    {% comment %} <a href="{% url 'my_evaluation_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-star w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">My Evaluations</span>
                     </a>
@@ -323,7 +329,8 @@
                     <a href="{% url 'training_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-graduation-cap w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Training</span>
-                    </a>
+                    </a> {% endcomment %}
+                    
                     <a href="{% url 'peer_review_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
                         <i class="fas fa-comments w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Feedback</span>
@@ -332,10 +339,11 @@
                         <i class="fas fa-clock w-5 mr-3"></i>
                         <span x-show="!sidebarCollapsed">Attendance</span>
                     </a>
-                    {% comment %} <a href="{% url 'work_log_list' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
-                        <i class="fas fa-book w-5 mr-3"></i>
-                        <span x-show="!sidebarCollapsed">Work Logs</span>
-                    </a> {% endcomment %}
+                    
+                    <a href="{% url 'password_change' %}" class="nav-item flex items-center px-4 py-3 text-sm font-medium">
+                        <i class="fas fa-lock w-5 mr-3"></i>
+                        <span x-show="!sidebarCollapsed">Change Password</span>
+                    </a>
 
                     <div class="section-divider" x-show="!sidebarCollapsed"></div>
                     <div class="section-title" x-show="!sidebarCollapsed">REPORTS</div>
